@@ -30,6 +30,7 @@ const NAV_LINKS = [
   { id: 'packages', labelKey: 'navbarNew.packages' },
   { id: 'about', labelKey: 'navbarNew.about' },
   { id: 'contact', labelKey: 'navbarNew.contact' },
+  { id: 'help', labelKey: 'navbarNew.help' },
 ];
 
 export const Navbar = () => {
@@ -54,12 +55,12 @@ export const Navbar = () => {
   const cityDropdownRef = useRef(null);
   const featuresDropdownRef = useRef(null);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
-  
+
   const selectedCity = searchParams?.city || 'All';
   const setSelectedCity = (city) => setSearchParams(prev => ({ ...prev, city }));
 
   const CITIES = [
-    'All', 'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 
+    'All', 'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai',
     'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Chandigarh', 'Lucknow', 'Goa'
   ];
 
@@ -111,16 +112,15 @@ export const Navbar = () => {
 
           {/* Left Side: Navigation and Logo */}
           <div className="flex items-center gap-4">
-            
+
             {/* Desktop Navigation - Hamburger Dropdown */}
             <div className="hidden lg:block relative" ref={featuresDropdownRef}>
               <button
                 onClick={() => setFeaturesDropdownOpen(!featuresDropdownOpen)}
-                className={`p-2 rounded-xl transition-all duration-200 ${
-                  featuresDropdownOpen
+                className={`p-2 rounded-xl transition-all duration-200 ${featuresDropdownOpen
                     ? 'bg-amber-500/10 text-amber-400'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
+                  }`}
                 title={t('navbar.menu')}
               >
                 <Menu className="w-6 h-6" />
@@ -142,11 +142,10 @@ export const Navbar = () => {
                           handleNavClick(link.id);
                           setFeaturesDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors ${
-                          activeTab === link.id
+                        className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors ${activeTab === link.id
                             ? 'bg-amber-500/10 text-amber-400'
                             : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
-                        }`}
+                          }`}
                       >
                         {t(link.labelKey)}
                       </button>
@@ -169,7 +168,7 @@ export const Navbar = () => {
                 <p className="text-slate-400 text-[10px] uppercase tracking-widest font-bold mt-1">{t('navbarNew.photographyServices')}</p>
               </div>
             </button>
-            
+
           </div>
 
           {/* Right Side */}
@@ -196,8 +195,8 @@ export const Navbar = () => {
                       className="absolute right-0 mt-2 w-48 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden z-50 origin-top-right py-2"
                     >
                       <div className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-{t('navbar.availableCities')}
-</div>
+                        {t('navbar.availableCities')}
+                      </div>
                       <div className="max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent custom-scrollbar">
                         {CITIES.map((city) => (
                           <div
@@ -214,7 +213,7 @@ export const Navbar = () => {
                 </AnimatePresence>
               </div>
             )}
-                        
+
             {/* User Profile */}
 
             {isAuthenticated && currentUser ? (
@@ -265,7 +264,7 @@ export const Navbar = () => {
                               {currentUser.name}
                             </h4>
                             <p className="text-xs text-slate-400 truncate mb-2">{currentUser.email}</p>
-                            
+
 
                           </div>
                         </div>
@@ -279,9 +278,9 @@ export const Navbar = () => {
                           <MenuLink icon={<CalendarDays className="w-4 h-4" />} label="My Bookings" onClick={() => { navigateToTab(`${currentUser.role}/bookings`); setUserDropdownOpen(false); }} />
                           <MenuLink icon={<Heart className="w-4 h-4" />} label="Wishlist" onClick={() => { navigateToTab(`${currentUser.role}/saved`); setUserDropdownOpen(false); }} />
                         </div>
-                        
+
                         <div className="h-px bg-slate-800/80 my-2 mx-2"></div>
-                        
+
                         <div className="space-y-1 mt-2">
                           <MenuLink icon={<ImageIcon className="w-4 h-4" />} label="My Gallery" onClick={() => { navigateToTab(`${currentUser.role}/albums`); setUserDropdownOpen(false); }} />
                           <MenuLink icon={<CreditCard className="w-4 h-4" />} label="Payments & Invoices" onClick={() => { navigateToTab(`${currentUser.role}/payments`); setUserDropdownOpen(false); }} />
@@ -294,14 +293,14 @@ export const Navbar = () => {
                         <div className="h-px bg-slate-800/80 my-2 mx-2"></div>
 
                         <div className="space-y-1 mt-2">
-                          <MenuLink icon={<Camera className="w-4 h-4 text-amber-400" />} label="Become a Photographer" onClick={() => { 
+                          <MenuLink icon={<Camera className="w-4 h-4 text-amber-400" />} label="Become a Photographer" onClick={() => {
                             if (isAuthenticated) {
                               logoutUser();
                             }
                             setTimeout(() => {
-                              navigateToTab('login', null, { mode: 'register', role: 'photographer' }); 
+                              navigateToTab('login', null, { mode: 'register', role: 'photographer' });
                             }, 0);
-                            setUserDropdownOpen(false); 
+                            setUserDropdownOpen(false);
                           }} />
                           <MenuLink icon={<HelpCircle className="w-4 h-4" />} label="Help & Support" onClick={() => { navigateToTab(`${currentUser.role}/support`); setUserDropdownOpen(false); }} />
                           <MenuLink icon={<Settings className="w-4 h-4" />} label="Settings" onClick={() => { navigateToTab(`${currentUser.role}/settings`); setUserDropdownOpen(false); }} />
@@ -315,8 +314,8 @@ export const Navbar = () => {
                           className="w-full flex items-center justify-between px-4 py-2.5 rounded-[16px] text-red-400 hover:bg-red-500/10 hover:text-red-300 font-semibold transition-colors group"
                         >
                           <span className="flex items-center gap-3"><LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-{t('navbar.logout')}
-</span>
+                            {t('navbar.logout')}
+                          </span>
                         </button>
                       </div>
 
@@ -336,8 +335,8 @@ export const Navbar = () => {
                   {t('navbar.login')}
                 </button>
 
-                <button 
-                  onClick={() => navigateToTab('photographers')} 
+                <button
+                  onClick={() => navigateToTab('photographers')}
                   className="hidden lg:flex items-center justify-center px-6 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:-translate-y-0.5 whitespace-nowrap">
                   {t('navbarNew.bookNow')}
                 </button>
@@ -379,11 +378,10 @@ export const Navbar = () => {
               <button
                 key={link.id}
                 onClick={() => handleNavClick(link.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition ${
-                  activeTab === link.id
+                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition ${activeTab === link.id
                     ? 'bg-amber-500/10 text-amber-400'
                     : 'text-slate-300 hover:bg-slate-800'
-                }`}>
+                  }`}>
                 {link.label}
               </button>
 
