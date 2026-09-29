@@ -60,19 +60,13 @@ builder.Services.AddCors(options =>
 
 // Configure Entity Framework Core with MySQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Server=localhost;Port=3306;Database=photohub_db;User=root;Password=your_password;";
+    ?? "Server=shinkansen.proxy.rlwy.net;Port=59922;Database=railway;User=root;Password=HxNTrWrUmTXPuBFlaQYTRLjTBUQhhcHk;";
 
 builder.Services.AddDbContext<PhotoHubDbContext>(options =>
 {
-    try
-    {
-        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-    }
-    catch
-    {
-        // Fallback MySQL configuration if server auto-detect is deferred at startup
-        options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 30)));
-    }
+    // Use a fixed MySQL version to avoid ServerVersion.AutoDetect network calls
+    // that can cause startup timeouts on serverless platforms like Vercel
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 30)));
 });
 
 var app = builder.Build();
