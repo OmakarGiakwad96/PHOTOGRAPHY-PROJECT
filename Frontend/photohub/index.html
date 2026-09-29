@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="PhotoHub - Premium Photography Services Platform. Book verified professional photographers for weddings, events, portraits, maternity, and product shoots." />
+    <meta name="keywords" content="photography, wedding photographer, event photography, portrait photography, book photographer, PhotoHub" />
+    <meta property="og:title" content="PhotoHub - Premium Photography Services" />
+    <meta property="og:description" content="Connect with verified professional photographers for every occasion. Transparent pricing, secure booking, and stunning results." />
+    <meta property="og:type" content="website" />
+    <title>PhotoHub - Premium Photography Services | Book Verified Photographers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      window.addEventListener('error', function(event) {
+        document.body.innerHTML += '<div style="position:fixed;top:0;left:0;right:0;background:red;color:white;z-index:9999;padding:20px;font-family:monospace;white-space:pre-wrap;">' + 
+          '<h2>RUNTIME ERROR</h2>' + 
+          '<b>Message:</b> ' + event.message + '<br/><br/>' + 
+          '<b>Filename:</b> ' + event.filename + ':' + event.lineno + '<br/><br/>' +
+          '<b>Stack:</b><br/>' + (event.error && event.error.stack ? event.error.stack : 'N/A') +
+          '</div>';
+      });
+    </script>
+  </body>
+</html>

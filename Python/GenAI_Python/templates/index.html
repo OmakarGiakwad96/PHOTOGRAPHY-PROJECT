@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LensBuddy - ChatBot</title>
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <div class="chat-wrapper">
+      <header class="chat-header">
+        <div class="avatar">📷</div>
+        <div>
+          <h1>LensBuddy</h1>
+        </div>
+      </header>
+
+      <div id="chat-log" class="chat-log">
+        <div class="message bot">Hi, I am your LensBuddy AI.</div>
+        <div class="message bot">How can I serve you?</div>
+        <div class="spacer"></div>
+      </div>
+
+      <form id="chat-form" class="chat-input">
+        <input type="text" id="message-input" placeholder="Type your question..." autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

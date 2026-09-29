@@ -1,0 +1,283 @@
+{
+  "info": {
+    "name": "PhotoHub Mock API",
+    "description": "No-database JSON API for PhotoHub. The store starts EMPTY (no dummy names) — run the requests top to bottom: each 'Create' request adds a record, and the matching 'Get' request right after it shows that same record coming back as JSON. Run `npm install && npm start` inside /mock-server first. Base URL = {{baseUrl}} = http://localhost:4000/api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api" }
+  ],
+  "item": [
+    {
+      "name": "0. Health Check",
+      "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+    },
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "1.1 Register Photographer (creates user_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Devansh Rao\",\n  \"email\": \"devansh.rao@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"9876600001\",\n  \"role\": \"photographer\"\n}" }
+          }
+        },
+        {
+          "name": "1.2 Register Client (creates user_id 2)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Riya Sharma\",\n  \"email\": \"riya.sharma@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"9876500001\",\n  \"role\": \"client\"\n}" }
+          }
+        },
+        {
+          "name": "1.3 Register Admin (creates user_id 3)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Anita Desai\",\n  \"email\": \"anita.desai@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"9876700001\",\n  \"role\": \"admin\"\n}" }
+          }
+        },
+        {
+          "name": "1.4 Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"riya.sharma@example.com\",\n  \"password\": \"Password@123\"\n}" }
+          }
+        },
+        {
+          "name": "1.5 Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/forgot-password",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"riya.sharma@example.com\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Users",
+      "item": [
+        { "name": "2.1 Get All Users", "request": { "method": "GET", "url": "{{baseUrl}}/users" } },
+        { "name": "2.2 Get User By Id", "request": { "method": "GET", "url": "{{baseUrl}}/users/1" } },
+        {
+          "name": "2.3 Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users/1",
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"9999988888\"\n}" }
+          }
+        },
+        {
+          "name": "2.4 Update User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users/2/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"blocked\"\n}" }
+          }
+        },
+        { "name": "2.5 Soft Delete User", "request": { "method": "DELETE", "url": "{{baseUrl}}/users/2" } }
+      ]
+    },
+    {
+      "name": "3. Photographers",
+      "item": [
+        {
+          "name": "3.1 Create Photographer Profile (for user_id 1, -> photographer_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/photographers",
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"experience\": 8,\n  \"bio\": \"Wedding & pre-wedding storyteller with a cinematic touch.\",\n  \"location\": \"Mumbai, MH\",\n  \"price_per_hour\": 3500\n}" }
+          }
+        },
+        { "name": "3.2 Get All Photographers", "request": { "method": "GET", "url": "{{baseUrl}}/photographers" } },
+        { "name": "3.3 Get Photographer By Id", "request": { "method": "GET", "url": "{{baseUrl}}/photographers/1" } },
+        { "name": "3.4 Filter By Search", "request": { "method": "GET", "url": "{{baseUrl}}/photographers?search=wedding" } },
+        {
+          "name": "3.5 Update Photographer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/photographers/1",
+            "body": { "mode": "raw", "raw": "{\n  \"price_per_hour\": 3800\n}" }
+          }
+        },
+        { "name": "3.6 Verify Photographer", "request": { "method": "PATCH", "url": "{{baseUrl}}/photographers/1/verify" } },
+        { "name": "3.7 Soft Delete Photographer", "request": { "method": "DELETE", "url": "{{baseUrl}}/photographers/1" } }
+      ]
+    },
+    {
+      "name": "4. Packages",
+      "item": [
+        {
+          "name": "4.1 Create Package (for photographer_id 1, -> package_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/packages",
+            "body": { "mode": "raw", "raw": "{\n  \"photographer_id\": 1,\n  \"name\": \"Classic Wedding Package\",\n  \"description\": \"Full day wedding coverage with edited highlights.\",\n  \"price\": 45000,\n  \"duration_hours\": 8,\n  \"features\": \"Candid + Traditional, 500 edited photos, 1 highlight video\"\n}" }
+          }
+        },
+        { "name": "4.2 Get All Packages", "request": { "method": "GET", "url": "{{baseUrl}}/packages" } },
+        { "name": "4.3 Get Packages By Photographer", "request": { "method": "GET", "url": "{{baseUrl}}/photographers/1/packages" } },
+        {
+          "name": "4.4 Update Package",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/packages/1",
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 47000\n}" }
+          }
+        },
+        { "name": "4.5 Delete Package", "request": { "method": "DELETE", "url": "{{baseUrl}}/packages/1" } }
+      ]
+    },
+    {
+      "name": "5. Portfolio",
+      "item": [
+        {
+          "name": "5.1 Add Portfolio Item (for photographer_id 1, -> portfolio_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/portfolio",
+            "body": { "mode": "raw", "raw": "{\n  \"photographer_id\": 1,\n  \"image_url\": \"/images/portfolio/sample.jpg\",\n  \"title\": \"Beachside Wedding\",\n  \"category\": \"Wedding\"\n}" }
+          }
+        },
+        { "name": "5.2 Get Portfolio By Photographer", "request": { "method": "GET", "url": "{{baseUrl}}/photographers/1/portfolio" } },
+        { "name": "5.3 Delete Portfolio Item", "request": { "method": "DELETE", "url": "{{baseUrl}}/portfolio/1" } }
+      ]
+    },
+    {
+      "name": "6. Bookings",
+      "item": [
+        {
+          "name": "6.1 Create Booking (user_id 2 books photographer_id 1, -> booking_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/bookings",
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 2,\n  \"photographer_id\": 1,\n  \"package_id\": 1,\n  \"event_date\": \"2026-09-01\",\n  \"booking_time\": \"10:00 AM\",\n  \"location\": \"Taj Lands End, Mumbai\",\n  \"special_requirements\": \"Need drone coverage\",\n  \"total_price\": 45000\n}" }
+          }
+        },
+        { "name": "6.2 Get All Bookings", "request": { "method": "GET", "url": "{{baseUrl}}/bookings" } },
+        { "name": "6.3 Get Bookings By User", "request": { "method": "GET", "url": "{{baseUrl}}/users/2/bookings" } },
+        { "name": "6.4 Get Bookings By Photographer", "request": { "method": "GET", "url": "{{baseUrl}}/photographers/1/bookings" } },
+        { "name": "6.5 Get Booking By Id", "request": { "method": "GET", "url": "{{baseUrl}}/bookings/1" } },
+        {
+          "name": "6.6 Update Booking Status (confirm)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/bookings/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"booking_status\": \"confirmed\"\n}" }
+          }
+        },
+        {
+          "name": "6.7 Update Booking Status (complete)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/bookings/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"booking_status\": \"completed\"\n}" }
+          }
+        },
+        {
+          "name": "6.8 Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/bookings/1/cancel",
+            "body": { "mode": "raw", "raw": "{\n  \"cancel_reason\": \"Client requested cancellation\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Reviews",
+      "item": [
+        {
+          "name": "7.1 Create Review (for booking_id 1, -> review_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/reviews",
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 2,\n  \"photographer_id\": 1,\n  \"booking_id\": 1,\n  \"rating\": 5,\n  \"comment\": \"Excellent work, highly recommended!\"\n}" }
+          }
+        },
+        { "name": "7.2 Get Reviews By Photographer", "request": { "method": "GET", "url": "{{baseUrl}}/photographers/1/reviews" } },
+        { "name": "7.3 Get Reviews By User", "request": { "method": "GET", "url": "{{baseUrl}}/users/2/reviews" } }
+      ]
+    },
+    {
+      "name": "8. Payments",
+      "item": [
+        {
+          "name": "8.1 Create Payment (for booking_id 1, -> payment_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/payments",
+            "body": { "mode": "raw", "raw": "{\n  \"booking_id\": 1,\n  \"amount\": 45000,\n  \"payment_method\": \"card\",\n  \"payment_gateway\": \"Razorpay\",\n  \"transaction_id\": \"TXN10001\"\n}" }
+          }
+        },
+        { "name": "8.2 Get All Payments", "request": { "method": "GET", "url": "{{baseUrl}}/payments" } },
+        { "name": "8.3 Get Payments By User", "request": { "method": "GET", "url": "{{baseUrl}}/users/2/payments" } },
+        { "name": "8.4 Get Payments By Booking", "request": { "method": "GET", "url": "{{baseUrl}}/bookings/1/payments" } },
+        {
+          "name": "8.5 Update Payment Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/payments/1/status",
+            "body": { "mode": "raw", "raw": "{\n  \"payment_status\": \"success\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Refunds",
+      "item": [
+        {
+          "name": "9.1 Request Refund (for booking_id 1 / payment_id 1, -> refund_id 1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/refunds",
+            "body": { "mode": "raw", "raw": "{\n  \"booking_id\": 1,\n  \"payment_id\": 1,\n  \"refund_amount\": 45000,\n  \"refund_reason\": \"Photographer unavailable\"\n}" }
+          }
+        },
+        { "name": "9.2 Get All Refunds", "request": { "method": "GET", "url": "{{baseUrl}}/refunds" } },
+        {
+          "name": "9.3 Approve Refund",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/refunds/1/approve",
+            "body": { "mode": "raw", "raw": "{\n  \"approved_by_admin_id\": 1\n}" }
+          }
+        },
+        { "name": "9.4 Reject Refund", "request": { "method": "PATCH", "url": "{{baseUrl}}/refunds/1/reject" } }
+      ]
+    },
+    {
+      "name": "10. Admin",
+      "item": [
+        { "name": "10.1 Dashboard Stats", "request": { "method": "GET", "url": "{{baseUrl}}/admin/stats" } },
+        { "name": "10.2 Get Payment Issues", "request": { "method": "GET", "url": "{{baseUrl}}/admin/payment-issues" } },
+        { "name": "10.3 Resolve Payment Issue", "request": { "method": "PATCH", "url": "{{baseUrl}}/admin/payment-issues/1/resolve" } },
+        { "name": "10.4 Get System Logs", "request": { "method": "GET", "url": "{{baseUrl}}/admin/logs" } }
+      ]
+    }
+  ]
+}

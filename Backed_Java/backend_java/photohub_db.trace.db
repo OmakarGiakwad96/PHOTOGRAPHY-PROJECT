@@ -1,0 +1,51 @@
+2026-07-31 14:39:39.831802+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table bookings (booking_id bigint not null auto_increment, booking_date date not null, booking_status varchar(255), booking_time time(6), cancel_reason TEXT, cancelled_at datetime(6), cancelled_by bigint, created_at datetime(6), event_id varchar(255), is_deleted bit, location varchar(255), refund_status varchar(255), special_requirements TEXT, total_price float(53), package_id bigint not null, photographer_id bigint not null, user_id bigint not null, primary key (booking_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table bookings (booking_id bigint not null auto_increment, booking_date date not null, booking_status varchar(255), booking_time time(6), cancel_reason TEXT, cancelled_at datetime(6), cancelled_by bigint, created_at datetime(6), event_id varchar(255), is_deleted bit, location varchar(255), refund_status varchar(255), special_requirements TEXT, total_price float(53), package_id bigint not null, photographer_id bigint not null, user_id bigint not null, primary key (booking_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:39.888629+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table packages (package_id bigint not null auto_increment, created_at datetime(6), description TEXT, duration_hours integer, features TEXT, is_deleted bit, name varchar(255), price float(53), photographer_id bigint not null, primary key (package_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table packages (package_id bigint not null auto_increment, created_at datetime(6), description TEXT, duration_hours integer, features TEXT, is_deleted bit, name varchar(255), price float(53), photographer_id bigint not null, primary key (package_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:39.956627+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table payments (id bigint not null auto_increment, amount float(53) not null, booking_id bigint not null, description varchar(255), method varchar(255) not null, status varchar(255) not null, transaction_id varchar(255), primary key (id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table payments (id bigint not null auto_increment, amount float(53) not null, booking_id bigint not null, description varchar(255), method varchar(255) not null, status varchar(255) not null, transaction_id varchar(255), primary key (id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:40.010675+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table photographers (photographer_id bigint not null auto_increment, bio TEXT, cover_image TEXT, created_at datetime(6), deleted_at datetime(6), experience integer, is_deleted bit, is_verified bit, location varchar(255), price_per_hour float(53), rating float(53), specialties varchar(255), user_id bigint not null, primary key (photographer_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table photographers (photographer_id bigint not null auto_increment, bio TEXT, cover_image TEXT, created_at datetime(6), deleted_at datetime(6), experience integer, is_deleted bit, is_verified bit, location varchar(255), price_per_hour float(53), rating float(53), specialties varchar(255), user_id bigint not null, primary key (photographer_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:40.055083+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table portfolios (portfolio_id bigint not null auto_increment, category varchar(255), created_at datetime(6), image_url TEXT not null, is_deleted bit not null, title varchar(255), photographer_id bigint not null, primary key (portfolio_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table portfolios (portfolio_id bigint not null auto_increment, category varchar(255), created_at datetime(6), image_url TEXT not null, is_deleted bit not null, title varchar(255), photographer_id bigint not null, primary key (portfolio_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:40.105056+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table refunds (refund_id bigint not null auto_increment, approved_by_admin bigint, booking_id bigint not null, created_at datetime(6), payment_id bigint not null, processed_at datetime(6), refund_amount float(53) not null, refund_reason varchar(255), refund_status varchar(255), primary key (refund_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table refunds (refund_id bigint not null auto_increment, approved_by_admin bigint, booking_id bigint not null, created_at datetime(6), payment_id bigint not null, processed_at datetime(6), refund_amount float(53) not null, refund_reason varchar(255), refund_status varchar(255), primary key (refund_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:40.155865+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "create table reviews (review_id bigint not null auto_increment, comment TEXT, created_at datetime(6), is_deleted bit, rating integer, photographer_id bigint not null, user_id bigint not null, primary key (review_id)) engine[*]=InnoDB"; expected "identifier"; SQL statement:
+create table reviews (review_id bigint not null auto_increment, comment TEXT, created_at datetime(6), is_deleted bit, rating integer, photographer_id bigint not null, user_id bigint not null, primary key (review_id)) engine=InnoDB [42001-224]
+2026-07-31 14:39:40.205047+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PHOTOGRAPHERS" not found (this database is empty); SQL statement:
+alter table photographers drop index UK_dlxqcak8lqrfqybiwn8nqm1dw [42104-224]
+2026-07-31 14:39:40.205047+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PHOTOGRAPHERS" not found; SQL statement:
+alter table photographers add constraint UK_dlxqcak8lqrfqybiwn8nqm1dw unique (user_id) [42102-224]
+2026-07-31 14:39:40.205047+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "BOOKINGS" not found; SQL statement:
+alter table bookings add constraint FKpsi0jsj8kjkqse44mspx80bk3 foreign key (package_id) references packages (package_id) [42102-224]
+2026-07-31 14:39:40.262661+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "BOOKINGS" not found; SQL statement:
+alter table bookings add constraint FK3lny5gmhye8b2vwd84ec4e890 foreign key (photographer_id) references photographers (photographer_id) [42102-224]
+2026-07-31 14:39:40.331535+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "BOOKINGS" not found; SQL statement:
+alter table bookings add constraint FKeyog2oic85xg7hsu2je2lx3s6 foreign key (user_id) references users (user_id) [42102-224]
+2026-07-31 14:39:40.371797+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PACKAGES" not found; SQL statement:
+alter table packages add constraint FKek3k4yb9bskx6v9x6o5wohhki foreign key (photographer_id) references photographers (photographer_id) [42102-224]
+2026-07-31 14:39:40.405029+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PHOTOGRAPHERS" not found; SQL statement:
+alter table photographers add constraint FKgq69w4xslucodtsq2v1lgu5hd foreign key (user_id) references users (user_id) [42102-224]
+2026-07-31 14:39:40.439823+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "PORTFOLIOS" not found; SQL statement:
+alter table portfolios add constraint FK1kn4hiua9pd98q6dfpttn3tx9 foreign key (photographer_id) references photographers (photographer_id) [42102-224]
+2026-07-31 14:39:40.488290+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "REVIEWS" not found; SQL statement:
+alter table reviews add constraint FKc8losibxx7f1fhlr72ef56y4u foreign key (photographer_id) references photographers (photographer_id) [42102-224]
+2026-07-31 14:39:40.522104+05:30 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "REVIEWS" not found; SQL statement:
+alter table reviews add constraint FKcgy7qjc1r99dp117y9en6lxye foreign key (user_id) references users (user_id) [42102-224]

@@ -1,0 +1,27 @@
+# ============================================
+# PhotoHub Java Backend — Dockerfile.vercel
+# Spring Boot application (Java 21)
+# ============================================
+
+# Stage 1: Build the application with Maven
+FROM maven:3.9.6-eclipse-temurin-21-jammy AS build
+WORKDIR /app
+
+# Copy pom.xml and download dependencies (cached layer)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build the JAR
+COPY src ./src
+RUN mvn package -DskipTests
+
+# Stage 2: Run the application
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+
+# Copy the built JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Vercel injects PORT env variable at runtime (defaults to 80)
+# Spring Boot picks it up via -Dserver.port=${PORT}
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -jar app.jar"]

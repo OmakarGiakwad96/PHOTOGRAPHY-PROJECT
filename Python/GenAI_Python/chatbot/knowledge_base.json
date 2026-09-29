@@ -1,0 +1,14 @@
+[
+  {
+    "question": "What data does the chatbot access?",
+    "answer": "The chatbot only uses sanitized summaries of database queries and never returns raw database rows."
+  },
+  {
+    "question": "How is my privacy protected?",
+    "answer": "All personal data is kept on the server; the chatbot never sends full records to the client."
+  },
+  {
+    "question": "Can I see pricing details?",
+    "answer": "Pricing is provided as high‑level package information, not raw price tables."
+  }
+]

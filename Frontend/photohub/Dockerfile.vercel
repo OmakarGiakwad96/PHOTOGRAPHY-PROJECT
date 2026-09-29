@@ -1,0 +1,56 @@
+# ============================================
+# PhotoHub Frontend — Dockerfile.vercel
+# Builds the React/Vite app and serves via Nginx
+# ============================================
+
+# Stage 1: Build the React/Vite application
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy source code and build for production
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve with Nginx on $PORT
+FROM nginx:alpine
+
+# Copy built static files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Create a dynamic nginx config template that uses the $PORT env variable
+# Vercel injects $PORT at runtime (defaults to 80)
+RUN cat > /etc/nginx/templates/default.conf.template <<'EOF'
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # SPA — route all non-file requests to index.html for React Router
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Cache static assets aggressively
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Health check endpoint
+    location /health {
+        access_log off;
+        return 200 '{"status":"ok","service":"frontend"}';
+        add_header Content-Type application/json;
+    }
+}
+EOF
+
+# Nginx's docker-entrypoint auto-substitutes envsubst on templates in /etc/nginx/templates/
+# It replaces ${PORT} with the actual PORT value and outputs to /etc/nginx/conf.d/
+
+CMD ["nginx", "-g", "daemon off;"]

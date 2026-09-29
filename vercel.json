@@ -1,0 +1,67 @@
+{
+  "services": {
+    "frontend": {
+      "root": "Frontend/photohub/",
+      "entrypoint": "Dockerfile.vercel"
+    },
+    "gateway": {
+      "root": "API_Gateway/",
+      "entrypoint": "Dockerfile.vercel",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "java-backend",
+          "format": "url",
+          "env": "JAVA_SERVICE"
+        },
+        {
+          "type": "service",
+          "service": "dotnet-backend",
+          "format": "url",
+          "env": "DOTNET_SERVICE"
+        },
+        {
+          "type": "service",
+          "service": "python-backend",
+          "format": "url",
+          "env": "PYTHON_SERVICE"
+        }
+      ]
+    },
+    "java-backend": {
+      "root": "Backed_Java/backend_java/",
+      "entrypoint": "Dockerfile.vercel"
+    },
+    "dotnet-backend": {
+      "root": "Backend_Dotnet/dotnetBackend/",
+      "entrypoint": "Dockerfile.vercel"
+    },
+    "python-backend": {
+      "root": "Python/GenAI_Python/",
+      "entrypoint": "Dockerfile.vercel"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/auth/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/admin/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/bookings/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/clients/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/packages/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/photographers/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/portfolio/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/reviews/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/payments/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/refunds/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/invoices/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/notifications/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/support/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/feedback/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/complaints/:path*", "destination": { "service": "gateway" } },
+    { "source": "/api/chat", "destination": { "service": "gateway" } },
+    { "source": "/api/recommend", "destination": { "service": "gateway" } },
+    { "source": "/api/search", "destination": { "service": "gateway" } },
+    { "source": "/api/health", "destination": { "service": "gateway" } },
+    { "source": "/api/status", "destination": { "service": "gateway" } },
+    { "source": "/(.*)", "destination": { "service": "frontend" } }
+  ]
+}
