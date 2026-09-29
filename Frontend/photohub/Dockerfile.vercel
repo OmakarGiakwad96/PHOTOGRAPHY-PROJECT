@@ -23,7 +23,8 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Create a dynamic nginx config template that uses the $PORT env variable
 # Vercel injects $PORT at runtime (defaults to 80)
-RUN cat > /etc/nginx/templates/default.conf.template <<'EOF'
+RUN mkdir -p /etc/nginx/templates && \
+    cat > /etc/nginx/templates/default.conf.template <<'EOF'
 server {
     listen ${PORT};
     server_name _;
