@@ -50,11 +50,13 @@ export const AuthPage = () => {
     e.preventDefault();
     setError('');
     
-    // Password Validation
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters and include a letter, number, and special character (e.g., rakesh@123)');
-      return;
+    // Password Validation on Registration
+    if (mode === 'register') {
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        setError('Password must be at least 8 characters and include at least one letter and one number.');
+        return;
+      }
     }
 
     setLoading(true);

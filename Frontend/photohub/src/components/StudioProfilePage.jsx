@@ -7,11 +7,9 @@ export const StudioProfilePage = () => {
   const { activeTabParams, studios, packages, portfolio, reviews, navigateToTab } = useApp();
   const { t } = useTranslation();
   
-  const id = activeTabParams?.id;
-  const studio = studios.find(s => s.studio_id === id);
+  const targetId = activeTabParams?.id ? Number(activeTabParams.id) : null;
+  const studio = (targetId ? studios.find(s => s.studio_id === targetId) : null) || studios[0];
 
-  // We reuse portfolio and packages for studios (mock data matches by owner_id or just mock it)
-  // For now, in our mock data, studios have owner_id. Let's just mock some packages/portfolio if not found
   const studioPortfolio = portfolio.filter(p => p.photographer_id === studio?.owner_id) || [];
   const studioPackages = packages.filter(p => p.photographer_id === studio?.owner_id) || [];
   const studioReviews = reviews.filter(r => r.photographer_id === studio?.owner_id) || [];

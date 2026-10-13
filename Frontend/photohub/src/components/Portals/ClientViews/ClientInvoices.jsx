@@ -8,7 +8,7 @@ export const ClientInvoices = () => {
 
   const { currentUser, bookings, payments } = useApp();
 
-  const clientBookings = bookings.filter(b => b.user_id === currentUser.user_id);
+  const clientBookings = bookings.filter(b => b.user_id === currentUser?.user_id);
   const clientPayments = payments.filter(p => clientBookings.some(b => b.booking_id === p.booking_id && p.payment_status === 'Completed'));
 
   const handleDownload = (paymentId) => {

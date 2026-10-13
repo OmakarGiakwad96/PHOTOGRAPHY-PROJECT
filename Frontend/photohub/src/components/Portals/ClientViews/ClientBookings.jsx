@@ -8,7 +8,7 @@ export const ClientBookings = () => {
 
   const { currentUser, bookings, photographers, cancelBooking } = useApp();
 
-  const clientBookings = bookings.filter(b => b.user_id === currentUser.user_id);
+  const clientBookings = bookings.filter(b => b.user_id === currentUser?.user_id);
 
   const handleCancel = (bookingId) => {
 
@@ -47,9 +47,9 @@ export const ClientBookings = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
                   <div>
-                    <span className="text-sm font-bold text-amber-400 uppercase tracking-widest">{t('clientBookings.bookingBBooking')}</span>
+                    <span className="text-sm font-bold text-amber-400 uppercase tracking-widest">Booking #{b.booking_id}</span>
                     <span className="mx-3 text-slate-700">•</span>
-                    <span className="text-xs text-slate-500 font-mono">{t('clientBookings.eVENTBEventid')}</span>
+                    <span className="text-xs text-slate-400 font-mono">EVENT: {b.event_id || `EVT-${b.booking_id}`}</span>
                   </div>
                   <span className={`self-start sm:self-auto px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-inner ${
                     b.booking_status === 'Confirmed' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' :

@@ -23,8 +23,6 @@ export const PhotographersDirectory = () => {
   const [isComparatorOpen, setIsComparatorOpen] = useState(false);
 
   const filteredPhotographers = photographers?.filter((p) => {
-  const { t } = useTranslation();
-
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           p.bio.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = locationFilter === 'All' || p.location.toLowerCase().includes(locationFilter.toLowerCase());
@@ -34,8 +32,6 @@ export const PhotographersDirectory = () => {
   }) || [];
 
   const filteredStudios = studios?.filter((s) => {
-  const { t } = useTranslation();
-
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           s.bio.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLocation = locationFilter === 'All' || s.location.toLowerCase().includes(locationFilter.toLowerCase());

@@ -26,29 +26,13 @@ export const AdminLogin = () => {
     e.preventDefault();
     setError('');
 
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      setError('Password must be at least 8 characters and include a letter, number, and special character (e.g., rakesh@123)');
-      return;
-    }
-
-    if (email !== 'rocky123@gmail.com' || password !== 'rocky@123') {
-      setError('Secure access denied. Invalid admin credentials.');
-      return;
-    }
-
     setLoading(true);
 
-    await new Promise(r => setTimeout(r, 800)); // Simulate secure handshake
+    await new Promise(r => setTimeout(r, 600)); // Handshake delay
 
     const result = await loginUser(email, password);
-    if (!result.success) {
+    if (!result.success || result.user?.role !== 'admin') {
       setError('Secure access denied. Invalid admin credentials.');
-    } else {
-      if (result.user.role !== 'admin') {
-        setError('Unauthorized role. Access denied.');
-        // In a real app we'd logout the user here if they try to access admin portal
-      }
     }
     setLoading(false);
   };

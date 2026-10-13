@@ -180,8 +180,8 @@ const AppLayout = () => {
 const ChatbotWrapper = () => {
   const { currentUser } = useApp();
   
-  // Only show the chatbot if the user is explicitly a 'client'
-  if (currentUser?.role === 'client') {
+  // Allow prospective clients and visitors to interact with LensBuddy photography assistant
+  if (!currentUser || currentUser?.role === 'client') {
     return <ChatbotWidget />;
   }
   

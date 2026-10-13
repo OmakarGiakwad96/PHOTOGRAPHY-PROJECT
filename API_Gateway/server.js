@@ -60,6 +60,14 @@ const createProxy = (target) => {
     });
 };
 
+// Routes for Python GenAI Backend (FastAPI / LensBuddy)
+const pythonRoutes = [
+    '/api/chat',
+    '/api/recommend',
+    '/api/search',
+    '/api/python'
+];
+
 // Apply proxies
 javaRoutes.forEach(route => {
     app.use(route, createProxy(javaTarget));
@@ -69,17 +77,9 @@ dotnetRoutes.forEach(route => {
     app.use(route, createProxy(dotnetTarget));
 });
 
-// Assuming Python GenAI service routes start with /api/python or similar
-// Let's add a general rule for it if needed, or keep it explicitly mapped
-app.use('/api/python', createProxyMiddleware({
-    target: pythonTarget,
-    changeOrigin: true,
-    pathRewrite: { '^/api/python': '' },
-    onError: (err, req, res) => {
-        console.error('Proxy Error (Python Backend):', err.message);
-        res.status(502).json({ error: 'Python GenAI Service is currently unreachable.' });
-    }
-}));
+pythonRoutes.forEach(route => {
+    app.use(route, createProxy(pythonTarget));
+});
 
 // ==========================================
 // Base Routes & Fallbacks

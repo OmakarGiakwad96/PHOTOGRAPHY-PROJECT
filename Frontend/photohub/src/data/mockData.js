@@ -240,7 +240,7 @@ export const INITIAL_PHOTOGRAPHERS = [
     deleted_at: null,
     created_at: "2025-02-18 14:00:00",
     cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606994/photohub/images/wedding/wedding-1.jpg",
-    specialties: ["Corporate", "Real Estate"]
+    specialties: ["Wedding", "Pre-Wedding", "Food", "Corporate"]
   },
   {
     photographer_id: 111,

@@ -30,7 +30,7 @@ namespace PhotoHub.Api.Controllers
             }
 
             var submission = await _supportService.CreateContactSubmissionAsync(dto);
-            return CreatedAtAction(nameof(GetContactSubmissions), new { id = submission.SubmissionId }, submission);
+            return StatusCode(201, submission);
         }
 
         /// <summary>

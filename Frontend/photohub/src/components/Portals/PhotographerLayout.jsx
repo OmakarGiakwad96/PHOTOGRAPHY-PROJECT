@@ -49,7 +49,7 @@ export const PhotographerLayout = ({ page }) => {
   const renderContent = () => {
     switch (page) {
       case 'dashboard':
-        return <PlaceholderFeature title="Photographer Dashboard" />;
+        return <PhotoShoots />;
       case 'shoots':
         return <PhotoShoots />;
       case 'events':

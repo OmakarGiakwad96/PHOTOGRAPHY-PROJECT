@@ -49,7 +49,7 @@ export const AdminLayout = ({ page }) => {
 
     switch (page) {
       case 'dashboard':
-        return <PlaceholderFeature title="Admin Dashboard" />;
+        return <AdminRevenue />;
       case 'revenue':
         return <AdminRevenue />;
       case 'users':

@@ -15,8 +15,8 @@ export const CheckoutPage = () => {
   const [isOtpStage, setIsOtpStage] = useState(false);
   const [otp, setOtp] = useState('');
 
-  const pId = activeTabParams?.photographerId;
-  const photographer = photographers.find(p => p.photographer_id === pId);
+  const targetPId = activeTabParams?.photographerId ? Number(activeTabParams.photographerId) : null;
+  const photographer = (targetPId ? photographers.find(p => p.photographer_id === targetPId) : null) || photographers[0];
 
   if (!photographer) {
     return (

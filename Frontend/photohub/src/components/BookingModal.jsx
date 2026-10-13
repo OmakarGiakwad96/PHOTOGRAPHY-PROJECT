@@ -102,6 +102,23 @@ export const BookingModal = () => {
     }
   };
 
+  const handleProceedToStep2 = () => {
+    if (!clientName.trim()) {
+      setErrorMessage('Please enter your full name for the booking confirmation.');
+      return;
+    }
+    if (!clientPhone.trim() || clientPhone.trim().replace(/\D/g, '').length < 10) {
+      setErrorMessage('Please enter a valid 10-digit mobile number for booking SMS & updates.');
+      return;
+    }
+    if (!location.trim()) {
+      setErrorMessage('Please enter the venue / shoot location.');
+      return;
+    }
+    setErrorMessage('');
+    setStep(2);
+  };
+
   const handleProceedToPayment = async () => {
     setIsProcessing(true);
     setErrorMessage('');
@@ -342,10 +359,17 @@ export const BookingModal = () => {
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <div className="pt-2">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={handleProceedToStep2}
                 className="btn-amber hover-shine w-full py-3.5 flex items-center justify-center gap-2 font-bold text-sm shadow-xl shadow-amber-500/20"
               >
                 <span>Continue to Price Summary & Payment</span>

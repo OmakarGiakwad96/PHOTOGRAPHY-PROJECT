@@ -7,12 +7,13 @@ export const PhotographerProfilePage = () => {
   const { activeTabParams, photographers, packages, portfolio, reviews, navigateToTab, setActiveBookingModal } = useApp();
   const { t } = useTranslation();
   
-  const id = activeTabParams?.id;
-  const photographer = photographers.find(p => p.photographer_id === id);
+  const targetId = activeTabParams?.id ? Number(activeTabParams.id) : null;
+  const photographer = (targetId ? photographers.find(p => p.photographer_id === targetId) : null) || photographers[0];
+  const photographerId = photographer?.photographer_id;
 
-  const photographerPortfolio = portfolio.filter(p => p.photographer_id === id);
-  const photographerPackages = packages.filter(p => p.photographer_id === id);
-  const photographerReviews = reviews.filter(r => r.photographer_id === id);
+  const photographerPortfolio = portfolio.filter(p => p.photographer_id === photographerId);
+  const photographerPackages = packages.filter(p => p.photographer_id === photographerId);
+  const photographerReviews = reviews.filter(r => r.photographer_id === photographerId);
 
   if (!photographer) {
     return (

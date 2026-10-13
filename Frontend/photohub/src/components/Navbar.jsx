@@ -169,6 +169,34 @@ export const Navbar = () => {
               </div>
             </button>
 
+            {/* Desktop Direct Navigation Links */}
+            <div className="hidden lg:flex items-center gap-1.5 ml-2">
+              <button
+                onClick={() => handleNavClick('photographers')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'photographers' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                Find Photographers
+              </button>
+              <button
+                onClick={() => handleNavClick('services')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'services' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                Services
+              </button>
+              <button
+                onClick={() => handleNavClick('packages')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === 'packages' ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                Packages
+              </button>
+            </div>
+
           </div>
 
           {/* Right Side */}
@@ -199,13 +227,20 @@ export const Navbar = () => {
                       </div>
                       <div className="max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent custom-scrollbar">
                         {CITIES.map((city) => (
-                          <div
+                          <button
                             key={city}
-                            className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-slate-400 opacity-60 cursor-default`}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCity(city);
+                              setCityDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-4 py-2.5 text-xs text-left transition-colors hover:bg-slate-800 ${
+                              selectedCity === city ? 'text-amber-400 font-bold bg-amber-500/10' : 'text-slate-300'
+                            }`}
                           >
                             <span>{city === 'All' ? t('directory.allLocations', { defaultValue: 'All Cities' }) : t(`citiesData.${city}.name`, { defaultValue: city })}</span>
-                            {selectedCity === city && <CheckCircle className="w-4 h-4 text-amber-500" />}
-                          </div>
+                            {selectedCity === city && <CheckCircle className="w-4 h-4 text-amber-500 shrink-0" />}
+                          </button>
                         ))}
                       </div>
                     </motion.div>

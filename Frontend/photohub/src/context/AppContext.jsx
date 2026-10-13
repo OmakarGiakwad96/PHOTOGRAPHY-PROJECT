@@ -24,7 +24,7 @@ export const AppProvider = ({ children }) => {
   });
   
   const [photographers, setPhotographers] = useState(() => {
-    const saved = localStorage.getItem('photohub_mock_photographers_v5');
+    const saved = localStorage.getItem('photohub_mock_photographers_v6');
     return saved ? JSON.parse(saved) : INITIAL_PHOTOGRAPHERS;
   });
   
@@ -70,7 +70,7 @@ export const AppProvider = ({ children }) => {
       try {
         const savedUsers = localStorage.getItem('photohub_mock_users_v3');
         const fallbackUsers = savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS;
-        const savedPhotos = localStorage.getItem('photohub_mock_photographers_v5');
+        const savedPhotos = localStorage.getItem('photohub_mock_photographers_v6');
         const fallbackPhotos = savedPhotos ? JSON.parse(savedPhotos) : INITIAL_PHOTOGRAPHERS;
 
         const [usersRes, photoRes, pkgRes, portRes, bookRes, revRes] = await Promise.all([
@@ -127,7 +127,7 @@ export const AppProvider = ({ children }) => {
   }, [users]);
 
   useEffect(() => {
-    localStorage.setItem('photohub_mock_photographers_v5', JSON.stringify(photographers));
+    localStorage.setItem('photohub_mock_photographers_v6', JSON.stringify(photographers));
   }, [photographers]);
 
   // History API Integration for Browser Back/Forward navigation

@@ -12,7 +12,7 @@ export const ClientHome = () => {
   const { currentUser, searchParams, setSearchParams, navigateToTab, photographers, bookings } = useApp();
   const { t } = useTranslation();
 
-  const activeBooking = bookings.find(b => b.user_id === currentUser.user_id && b.status === 'confirmed');
+  const activeBooking = bookings.find(b => b.user_id === currentUser?.user_id && (b.booking_status?.toLowerCase() === 'confirmed' || b.status?.toLowerCase() === 'confirmed'));
 
   const greeting = new Date().getHours() < 12 ? t('clientHome.goodMorning') 
                  : new Date().getHours() < 18 ? t('clientHome.goodAfternoon') 

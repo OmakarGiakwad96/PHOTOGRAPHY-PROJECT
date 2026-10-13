@@ -15,10 +15,11 @@ const VendorComparator = ({ isOpen, onClose, selectedIds }) => {
       // Simulate a small loading delay for UI feel
       setTimeout(() => {
         const selectedVendors = selectedIds.map(id => {
-          const p = photographers.find(photo => photo.photographer_id === id);
+          const numId = Number(id);
+          const p = photographers.find(photo => photo.photographer_id === numId);
           if (!p) return null;
           
-          const pPackages = packages.filter(pkg => pkg.photographer_id === id);
+          const pPackages = packages.filter(pkg => pkg.photographer_id === numId);
           
           return {
             _id: p.photographer_id,
