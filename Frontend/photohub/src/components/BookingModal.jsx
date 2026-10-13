@@ -133,9 +133,14 @@ export const BookingModal = () => {
 
         const result = await createBooking(bookingPayload, 'Razorpay Secure');
         setIsProcessing(false);
-        setBookingSuccess(result || {
-          booking: { ...bookingPayload, booking_status: 'Confirmed' },
-          payment: { ...paymentResult, amount: totalAmount, transaction_id: paymentResult.transactionId || `TXN_${Date.now()}` }
+        setBookingSuccess({
+          booking: result?.booking || { ...bookingPayload, booking_status: 'Confirmed' },
+          payment: {
+            amount: totalAmount,
+            transaction_id: paymentResult?.transactionId || (result?.payment?.transaction_id) || `pay_${Date.now()}`,
+            order_id: paymentResult?.orderId,
+            status: 'Completed'
+          }
         });
         setStep(3); // Success Screen
       },

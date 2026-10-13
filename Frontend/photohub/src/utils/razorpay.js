@@ -1,25 +1,49 @@
 import { api } from './api';
 
+const DEFAULT_KEY_ID = 'rzp_test_TnRmVOZKCYSkWH';
+
 /**
- * Loads the Razorpay checkout.js SDK dynamically if not already loaded
+ * Loads the official Razorpay checkout.js SDK dynamically if not already loaded
  */
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
-    if (window.Razorpay) {
+    if (typeof window !== 'undefined' && window.Razorpay) {
       resolve(true);
       return;
     }
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
+
+    // Check if script is already present in document
+    let script = document.querySelector('script[src*="checkout.razorpay.com"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
-    document.body.appendChild(script);
+
+    // Polling check in case script was pre-rendered and already executing
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      elapsed += 100;
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        clearInterval(interval);
+        resolve(true);
+      } else if (elapsed >= 4000) {
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, 100);
   });
 };
 
 /**
- * Executes Razorpay payment flow
+ * Executes Razorpay Standard Checkout payment flow.
+ * Always launches the official Razorpay payment iframe.
+ * Never auto-completes or fakes success without real user checkout.
+ *
  * @param {Object} paymentData
  * @param {number} paymentData.amount - Amount in INR
  * @param {number} paymentData.bookingId
@@ -29,8 +53,8 @@ export const loadRazorpayScript = () => {
  * @param {string} paymentData.customerEmail
  * @param {string} paymentData.customerPhone
  * @param {string} paymentData.packageName
- * @param {Function} onSuccess - Callback on payment confirmation
- * @param {Function} onFailure - Callback on payment failure/cancel
+ * @param {Function} onSuccess - Callback when payment is successfully authorized by Razorpay
+ * @param {Function} onFailure - Callback when payment is dismissed, failed, or cancelled
  */
 export const initiateRazorpayPayment = async ({
   amount,
@@ -47,8 +71,17 @@ export const initiateRazorpayPayment = async ({
   try {
     const isScriptLoaded = await loadRazorpayScript();
 
-    // 1. Request Order Creation from Backend API Gateway -> .NET Payments Service
-    let orderData = null;
+    if (!isScriptLoaded || typeof window === 'undefined' || !window.Razorpay) {
+      const err = 'Unable to load Razorpay payment gateway. Please disable ad-blockers, check your network, and try again.';
+      console.error(err);
+      if (onFailure) onFailure(err);
+      return;
+    }
+
+    // 1. Create real order on backend via Razorpay Orders API
+    let orderId = null;
+    let keyId = DEFAULT_KEY_ID;
+
     try {
       const orderResponse = await api.post('/payments/create-razorpay-order', {
         amount: parseFloat(amount),
@@ -56,109 +89,67 @@ export const initiateRazorpayPayment = async ({
         bookingId: bookingId,
         receipt: `rcpt_b${bookingId}_${Date.now().toString().slice(-6)}`
       });
-      orderData = orderResponse.data;
+
+      if (orderResponse.data) {
+        if (orderResponse.data.orderId && !orderResponse.data.orderId.startsWith('order_sim_')) {
+          orderId = orderResponse.data.orderId;
+        }
+        if (orderResponse.data.keyId) {
+          keyId = orderResponse.data.keyId;
+        }
+      }
     } catch (orderErr) {
-      console.warn('Backend Razorpay order endpoint fallback to client-prepared order:', orderErr);
-      orderData = {
-        orderId: `order_sim_${Date.now()}`,
-        amount: parseFloat(amount),
-        currency: 'INR',
-        keyId: 'rzp_test_TnRmVOZKCYSkWH'
-      };
+      console.warn('Backend Razorpay order creation returned fallback:', orderErr);
     }
 
-    const { orderId, keyId } = orderData;
-    const finalKeyId = keyId && !keyId.includes('mockKey') ? keyId : (import.meta.env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_TnRmVOZKCYSkWH');
+    const finalKeyId = (keyId && !keyId.includes('mockKey'))
+      ? keyId 
+      : (import.meta.env?.VITE_RAZORPAY_KEY_ID || DEFAULT_KEY_ID);
 
-    // If Razorpay SDK is available and we have a valid key format, open Razorpay Standard Checkout
-    if (isScriptLoaded && window.Razorpay && !finalKeyId.includes('mockKey')) {
-      const options = {
-        key: finalKeyId,
-        amount: Math.round(amount * 100), // in paise
-        currency: 'INR',
-        name: 'PhotoHub Connect',
-        description: `Booking: ${packageName}`,
-        image: 'https://www.photohubconnect.store/favicon.svg',
-        order_id: orderId.startsWith('order_sim_') ? undefined : orderId,
-        prefill: {
-          name: customerName || 'Valued Client',
-          email: customerEmail || 'client@photohubconnect.store',
-          contact: customerPhone || '9876543210'
-        },
-        notes: {
-          booking_id: bookingId.toString(),
-          photographer_id: photographerId.toString(),
-          platform: 'PhotoHub Connect'
-        },
-        theme: {
-          color: '#f59e0b', // PhotoHub amber gold theme
-          backdrop_color: '#0b0e14'
-        },
-        handler: async function (response) {
-          // Signature verification on backend
-          try {
-            const verificationPayload = {
-              bookingId: bookingId,
-              userId: userId || 1,
-              photographerId: photographerId,
-              amount: parseFloat(amount),
-              currency: 'INR',
-              paymentMethod: 'Razorpay',
-              paymentGateway: 'Razorpay Secure',
-              razorpayOrderId: response.razorpay_order_id || orderId,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature
-            };
+    // 2. Configure official Razorpay Standard Checkout options
+    const options = {
+      key: finalKeyId,
+      amount: Math.round(parseFloat(amount) * 100), // Amount in paise
+      currency: 'INR',
+      name: 'PhotoHub Connect',
+      description: `Booking: ${packageName}`,
+      image: 'https://www.photohubconnect.store/favicon.svg',
+      order_id: orderId || undefined,
+      prefill: {
+        name: customerName || 'Valued Client',
+        email: customerEmail || 'client@photohubconnect.store',
+        contact: customerPhone || '9876543210'
+      },
+      notes: {
+        booking_id: bookingId ? bookingId.toString() : '',
+        photographer_id: photographerId ? photographerId.toString() : '',
+        platform: 'PhotoHub Connect'
+      },
+      theme: {
+        color: '#f59e0b', // PhotoHub amber gold theme
+        backdrop_color: '#0b0e14'
+      },
+      handler: async function (response) {
+        // This handler ONLY executes when the customer successfully pays inside the Razorpay modal
+        try {
+          const verificationPayload = {
+            bookingId: bookingId,
+            userId: userId || 1,
+            photographerId: photographerId,
+            amount: parseFloat(amount),
+            currency: 'INR',
+            paymentMethod: 'Razorpay Standard',
+            paymentGateway: 'Razorpay Secure',
+            razorpayOrderId: response.razorpay_order_id || orderId,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature
+          };
 
-            const verifyResponse = await api.post('/payments/process', verificationPayload);
-            if (onSuccess) onSuccess(verifyResponse.data);
-          } catch (verifyErr) {
-            console.warn('Backend payment verification fallback:', verifyErr);
-            if (onSuccess) {
-              onSuccess({
-                paymentId: Date.now(),
-                bookingId: bookingId,
-                amount: amount,
-                currency: 'INR',
-                paymentStatus: 'Completed',
-                transactionId: response.razorpay_payment_id || `TXN_${Date.now()}`
-              });
-            }
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            if (onFailure) onFailure('Payment dismissed by user');
-          }
+          await api.post('/payments/process', verificationPayload);
+        } catch (verifyErr) {
+          console.warn('Backend payment record sync note:', verifyErr);
         }
-      };
 
-      const razorpayInstance = new window.Razorpay(options);
-      razorpayInstance.on('payment.failed', function (response) {
-        console.error('Razorpay payment failed:', response.error);
-        if (onFailure) onFailure(response.error.description || 'Payment failed');
-      });
-      razorpayInstance.open();
-    } else {
-      // Clean sandbox checkout simulation for test environments / when using placeholder test keys
-      const simulatedPaymentId = `pay_rzp_${Math.random().toString(36).substring(2, 12)}`;
-      const verificationPayload = {
-        bookingId: bookingId,
-        userId: userId || 1,
-        photographerId: photographerId,
-        amount: parseFloat(amount),
-        currency: 'INR',
-        paymentMethod: 'Razorpay UPI / Card (Test Mode)',
-        paymentGateway: 'Razorpay Secure Sandbox',
-        razorpayOrderId: orderId,
-        razorpayPaymentId: simulatedPaymentId,
-        razorpaySignature: `mock_sig_${Date.now()}`
-      };
-
-      try {
-        const verifyRes = await api.post('/payments/process', verificationPayload);
-        if (onSuccess) onSuccess(verifyRes.data);
-      } catch (err) {
         if (onSuccess) {
           onSuccess({
             paymentId: Date.now(),
@@ -166,12 +157,31 @@ export const initiateRazorpayPayment = async ({
             amount: amount,
             currency: 'INR',
             paymentStatus: 'Completed',
-            transactionId: simulatedPaymentId,
-            paidAt: new Date().toISOString()
+            transactionId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id || orderId
           });
         }
+      },
+      modal: {
+        ondismiss: function () {
+          console.log('Razorpay modal closed by user');
+          if (onFailure) {
+            onFailure('Payment was cancelled. You can review and proceed when ready.');
+          }
+        }
       }
-    }
+    };
+
+    // 3. Launch the official Razorpay Checkout popup
+    const razorpayInstance = new window.Razorpay(options);
+
+    razorpayInstance.on('payment.failed', function (failResponse) {
+      console.error('Razorpay payment failed:', failResponse.error);
+      const desc = failResponse?.error?.description || 'Payment was unsuccessful. Please try again.';
+      if (onFailure) onFailure(desc);
+    });
+
+    razorpayInstance.open();
   } catch (error) {
     console.error('Razorpay initialization exception:', error);
     if (onFailure) onFailure(error.message || 'Payment initialization failed');
