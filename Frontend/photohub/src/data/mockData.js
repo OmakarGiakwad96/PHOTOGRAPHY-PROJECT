@@ -321,6 +321,70 @@ export const INITIAL_PHOTOGRAPHERS = [
     created_at: "2025-03-01 11:10:00",
     cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606968/photohub/images/fashion/fashion-3.jpg",
     specialties: ["Corporate", "Pre-Wedding"]
+  },
+  {
+    photographer_id: 116,
+    user_id: 2,
+    name: "The Pune Wedding Tales",
+    experience: 9,
+    bio: "WedMeGood top-rated candid wedding photographers in Pune. Specializing in intimate Maharashtrian, destination, and royal weddings with 4K cinematic teasers.",
+    location: "Koregaon Park, Pune, Maharashtra",
+    rating: 4.9,
+    price_per_hour: 6500,
+    is_verified: true,
+    is_deleted: false,
+    deleted_at: null,
+    created_at: "2025-03-05 10:00:00",
+    cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606994/photohub/images/wedding/wedding-1.jpg",
+    specialties: ["Wedding", "Pre-Wedding"]
+  },
+  {
+    photographer_id: 117,
+    user_id: 3,
+    name: "Amit Deshmukh Photography",
+    experience: 11,
+    bio: "Awarded Best Pune Candid Photographer. Creating timeless wedding albums, raw emotional captures, and pre-wedding reels in Pune and Lavasa.",
+    location: "Baner, Pune, Maharashtra",
+    rating: 5.0,
+    price_per_hour: 8000,
+    is_verified: true,
+    is_deleted: false,
+    deleted_at: null,
+    created_at: "2025-03-07 11:30:00",
+    cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606995/photohub/images/wedding/wedding-2.jpg",
+    specialties: ["Wedding", "Portrait"]
+  },
+  {
+    photographer_id: 118,
+    user_id: 4,
+    name: "Lumière Candid Stories Pune",
+    experience: 7,
+    bio: "Modern aesthetic wedding photography, drone cinematic teasers, and pre-wedding conceptual shoots across Pune, Lonavala & Mahabaleshwar.",
+    location: "Viman Nagar, Pune, Maharashtra",
+    rating: 4.8,
+    price_per_hour: 5500,
+    is_verified: true,
+    is_deleted: false,
+    deleted_at: null,
+    created_at: "2025-03-10 14:15:00",
+    cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606996/photohub/images/wedding/wedding-3.jpg",
+    specialties: ["Wedding", "Pre-Wedding"]
+  },
+  {
+    photographer_id: 119,
+    user_id: 5,
+    name: "Royal Shutter Pune",
+    experience: 12,
+    bio: "Comprehensive wedding photography & cinematography team. Traditional rituals, sangeet madness, and candid emotions captured with precision.",
+    location: "Kothrud, Pune, Maharashtra",
+    rating: 4.9,
+    price_per_hour: 7000,
+    is_verified: true,
+    is_deleted: false,
+    deleted_at: null,
+    created_at: "2025-03-12 09:45:00",
+    cover_image: "https://res.cloudinary.com/wcxgdspz/image/upload/v1785606997/photohub/images/wedding/wedding-4.jpg",
+    specialties: ["Wedding", "Event"]
   }
 ];
 
@@ -616,6 +680,61 @@ export const INITIAL_PACKAGES = [
     features: "Up to 15 Products, White Background + Lifestyle Styling, E-commerce Ready Formatting",
     is_deleted: false,
     created_at: "2025-01-13 09:00:00"
+  },
+  {
+    package_id: 206,
+    photographer_id: 116,
+    name: "Pune Royal Wedding Day",
+    description: "Complete full day wedding coverage, 2 candid cinematographers, drone shoot, and 450+ retouched photos.",
+    price: 65000,
+    duration_hours: 8,
+    features: "8 Hours Coverage, 2 Cinematographers, Drone 4K Reel, Premium Wedding Box Album, Online Cloud Vault",
+    is_deleted: false,
+    created_at: "2025-03-05 10:30:00"
+  },
+  {
+    package_id: 207,
+    photographer_id: 116,
+    name: "Romantic Pre-Wedding Shoot (Lavasa / Pune)",
+    description: "Full day pre-wedding story shoot with 3 outfit looks, cinematic romantic teaser, and 50 edited portraits.",
+    price: 35000,
+    duration_hours: 5,
+    features: "5 Hours Shoot, 3 Outfits, 1-Min Instagram Reel, 50 Retouched Pictures, Props Included",
+    is_deleted: false,
+    created_at: "2025-03-05 11:00:00"
+  },
+  {
+    package_id: 208,
+    photographer_id: 117,
+    name: "Deshmukh Signature Candid Wedding",
+    description: "Top-tier candid photography capturing the raw emotional moments, pheras, and sangeet madness.",
+    price: 75000,
+    duration_hours: 10,
+    features: "10 Hours Shoot, Amit Deshmukh Lead Shooter, Traditional + Candid Team, Teaser Video + Full Film",
+    is_deleted: false,
+    created_at: "2025-03-07 12:00:00"
+  },
+  {
+    package_id: 209,
+    photographer_id: 118,
+    name: "Lumière Candid Wedding & Reception",
+    description: "Aesthetic editorial style wedding coverage. Natural lighting, candid frames, and vibrant colors.",
+    price: 55000,
+    duration_hours: 7,
+    features: "7 Hours Coverage, Drone Aerial Shots, 350 High-Res Edited Images, Same-Day 60s Teaser",
+    is_deleted: false,
+    created_at: "2025-03-10 15:00:00"
+  },
+  {
+    package_id: 210,
+    photographer_id: 119,
+    name: "Royal Shutter Pune Mega Wedding",
+    description: "Grand traditional and contemporary wedding coverage for all rituals, haldi, mehendi, and reception.",
+    price: 70000,
+    duration_hours: 8,
+    features: "8 Hours Coverage, 3 Camera Crew, Live Stream Setup, Hardcover Wedding Album, 500+ Edited Shots",
+    is_deleted: false,
+    created_at: "2025-03-12 10:00:00"
   }
 ];
 

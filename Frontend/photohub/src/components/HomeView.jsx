@@ -6,50 +6,141 @@ import { useTranslation } from 'react-i18next';
 
 // --- Hero Section ---
 const HomeHero = () => {
-  const { navigateToTab } = useApp();
+  const { navigateToTab, setSearchParams, searchParams, setActiveBookingModal } = useApp();
   const { t } = useTranslation();
+  
+  const [searchCity, setSearchCity] = useState(searchParams?.city || 'Pune');
+  const [searchCategory, setSearchCategory] = useState(searchParams?.category || 'Wedding');
+  const [searchBudget, setSearchBudget] = useState('All');
+  const [shootDate, setShootDate] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchParams(prev => ({
+      ...prev,
+      city: searchCity,
+      category: searchCategory,
+      budget: searchBudget,
+      date: shootDate
+    }));
+    navigateToTab('photographers');
+  };
+
   return (
-    <div className="relative min-h-[90vh] flex flex-col justify-between overflow-hidden">
+    <div className="relative min-h-[92vh] flex flex-col justify-between overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 z-0 bg-[#080808]">
         <img 
           src="https://res.cloudinary.com/wcxgdspz/image/upload/v1785606978/photohub/images/studio-hero.jpg" 
           alt={t('homeView.premiumStudioPhoto')} 
-          className="w-full h-full object-cover brightness-[0.6] opacity-80"
+          className="w-full h-full object-cover brightness-[0.55] opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0b0e14] via-transparent to-transparent"></div>
       </div>
       
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-32 pb-20 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-28 pb-16 flex-1 flex flex-col justify-center">
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          className="max-w-2xl"
+          className="max-w-3xl"
         >
-          <h2 className="text-4xl md:text-5xl text-[#c89845] mb-2 font-serif italic" style={{ fontFamily: "'Dancing Script', 'Playfair Display', cursive, serif" }}>
-            {t('homeHero.weCapture')}
-          </h2>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-wide leading-tight uppercase">
-            {t('homeHero.realMoments')}
-          </h1>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-[#c89845] mb-6 tracking-wide leading-tight uppercase drop-shadow-lg">
-            {t('homeHero.trueEmotions')}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-widest mb-4 backdrop-blur-md">
+            <span>✨ India's Verified Photography Marketplace</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-[1.1] uppercase font-serif">
+            Find & Book Top <br />
+            <span className="text-gradient-amber italic lowercase font-sans font-normal" style={{ fontFamily: "'Dancing Script', cursive, serif" }}>
+              wedding & candid
+            </span> Photographers
           </h1>
           
-          <div className="w-16 h-1 bg-transparent mb-6 rounded-full"></div>
-          
-          <p className="text-lg md:text-xl text-slate-300 mb-10 font-light leading-relaxed max-w-lg">
-            {t('homeHero.desc')}
+          <p className="text-base sm:text-lg text-slate-300 mt-4 mb-8 font-light leading-relaxed max-w-xl">
+            Compare verified portfolios, transparent daily & hourly packages, read genuine reviews, and pay securely via Razorpay.
           </p>
-          
-          <button 
-            onClick={() => navigateToTab('services')}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-transparent border-2 border-[#c89845] text-[#c89845] hover:bg-[#c89845] hover:text-white font-bold rounded shadow-xl transition-all uppercase tracking-wider text-sm"
-          >
-            {t('homeHero.explore')} <ChevronRight className="w-5 h-5" />
-          </button>
+
+          {/* WedMeGood Style Search Box */}
+          <form onSubmit={handleSearch} className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/80 rounded-2xl p-3 sm:p-4 shadow-2xl shadow-black/80 max-w-4xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            
+            {/* City Selector */}
+            <div className="flex flex-col text-left">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-1 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-amber-400" /> City
+              </label>
+              <select
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2.5 text-white text-xs font-semibold focus:outline-none focus:border-amber-500 transition-colors appearance-none"
+              >
+                <option value="Pune">Pune (Baner, Koregaon Park)</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Delhi">Delhi NCR</option>
+                <option value="Bangalore">Bengaluru</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Goa">Goa</option>
+                <option value="Jaipur">Jaipur</option>
+                <option value="All">All Cities</option>
+              </select>
+            </div>
+
+            {/* Category */}
+            <div className="flex flex-col text-left">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-1 flex items-center gap-1">
+                <Camera className="w-3 h-3 text-amber-400" /> Category
+              </label>
+              <select
+                value={searchCategory}
+                onChange={(e) => setSearchCategory(e.target.value)}
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2.5 text-white text-xs font-semibold focus:outline-none focus:border-amber-500 transition-colors appearance-none"
+              >
+                <option value="Wedding">Wedding Photography</option>
+                <option value="Pre-Wedding">Pre-Wedding Shoots</option>
+                <option value="Maternity">Maternity & Baby</option>
+                <option value="Corporate">Corporate & Events</option>
+                <option value="Commercial">Product & Commercial</option>
+                <option value="Fashion">Fashion & Editorial</option>
+                <option value="All">All Categories</option>
+              </select>
+            </div>
+
+            {/* Event Date */}
+            <div className="flex flex-col text-left">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-1 flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-amber-400" /> Shoot Date
+              </label>
+              <input
+                type="date"
+                min={new Date().toISOString().split('T')[0]}
+                value={shootDate}
+                onChange={(e) => setShootDate(e.target.value)}
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex items-end">
+              <button
+                type="submit"
+                className="w-full btn-amber hover-shine py-2.5 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20"
+              >
+                <Search className="w-4 h-4" />
+                <span>Search Photographers</span>
+              </button>
+            </div>
+
+          </form>
+
+          {/* Quick Badges */}
+          <div className="flex flex-wrap items-center gap-3 pt-6 text-xs text-slate-400 font-medium">
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-emerald-400" /> 100% Verified Profiles</span>
+            <span className="text-slate-700">•</span>
+            <span className="flex items-center gap-1.5"><Shield className="w-4 h-4 text-amber-400" /> Escrow Protected Payments</span>
+            <span className="text-slate-700">•</span>
+            <span className="flex items-center gap-1.5"><Star className="w-4 h-4 text-amber-400 fill-amber-400" /> Real Verified Reviews</span>
+          </div>
+
         </motion.div>
       </div>
 
@@ -148,7 +239,7 @@ const PopularCategories = () => {
 
 // --- Featured & Trending Photographers (Mock data combined) ---
 const FeaturedPhotographers = ({ title, subtitle }) => {
-  const { navigateToTab, photographers: allPhotographers, searchParams } = useApp();
+  const { navigateToTab, photographers: allPhotographers, searchParams, setActiveBookingModal } = useApp();
   const { t } = useTranslation();
   
   const photographers = allPhotographers
@@ -193,12 +284,20 @@ const FeaturedPhotographers = ({ title, subtitle }) => {
                     <p className="text-xs text-slate-500">{t('featured.startingAt')}</p>
                     <p className="text-xl font-bold text-white">₹{p.price_per_hour}/hr</p>
                   </div>
-                  <button 
-                    onClick={() => navigateToTab('profile', null, { id: p.photographer_id })} 
-                    className="px-6 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg transition"
-                  >
-                    {t('featured.viewProfile')}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => navigateToTab('profile', null, { id: p.photographer_id })} 
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg text-xs border border-slate-700 transition"
+                    >
+                      {t('featured.viewProfile')}
+                    </button>
+                    <button 
+                      onClick={() => setActiveBookingModal({ open: true, photographer_id: p.photographer_id, step: 1 })} 
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg text-xs shadow-md shadow-amber-500/20 transition"
+                    >
+                      Book Now
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -282,7 +282,13 @@ export const PhotographersDirectory = () => {
                     {directoryType === 'individuals' ? t('directory.viewDetails') : 'View Studio'}
                   </button>
                   <button 
-                    onClick={() => navigateToTab('checkout', null, { photographerId: p.photographer_id, studioId: p.studio_id })}
+                    onClick={() => {
+                      if (directoryType === 'individuals') {
+                        setActiveBookingModal({ open: true, photographer_id: p.photographer_id, step: 1 });
+                      } else {
+                        navigateToTab('checkout', null, { studioId: p.studio_id });
+                      }
+                    }}
                     className="flex-1 py-3 text-center rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm transition-colors shadow-lg shadow-amber-500/20"
                   >
                     {t('directory.bookNow')}

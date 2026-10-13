@@ -90,60 +90,40 @@ const MainContent = () => {
 
       {/* PUBLIC DIRECTORY PAGES */}
       {activeTab === 'services' && (
-        <ProtectedViewWrapper tabName="services">
-          <ServicesSection />
-        </ProtectedViewWrapper>
+        <ServicesSection />
       )}
 
       {activeTab === 'photographers' && (
-        <ProtectedViewWrapper tabName="photographers">
-          <PhotographersDirectory />
-        </ProtectedViewWrapper>
+        <PhotographersDirectory />
       )}
 
       {activeTab === 'packages' && (
-        <ProtectedViewWrapper tabName="packages">
-          <PackagesSection />
-        </ProtectedViewWrapper>
+        <PackagesSection />
       )}
 
       {activeTab === 'gallery' && (
-        <ProtectedViewWrapper tabName="gallery">
-          <GallerySection />
-        </ProtectedViewWrapper>
+        <GallerySection />
       )}
 
       {activeTab === 'about' && (
-        <ProtectedViewWrapper tabName="about">
-          <AboutSection />
-        </ProtectedViewWrapper>
+        <AboutSection />
       )}
 
       {activeTab === 'contact' && (
-        <ProtectedViewWrapper tabName="contact">
-          <ContactSection />
-        </ProtectedViewWrapper>
+        <ContactSection />
       )}
 
-
-
-      {/* NEW STANDALONE PAGES */}
+      {/* STANDALONE PROFILES & CHECKOUT */}
       {activeTab === 'profile' && (
-        <ProtectedViewWrapper tabName="photographer profile">
-          <PhotographerProfilePage />
-        </ProtectedViewWrapper>
+        <PhotographerProfilePage />
       )}
 
       {activeTab === 'studioprofile' && (
-        <ProtectedViewWrapper tabName="studio profile">
-          <StudioProfilePage />
-        </ProtectedViewWrapper>
+        <StudioProfilePage />
       )}
 
       {activeTab === 'checkout' && (
-        <ProtectedViewWrapper tabName="secure checkout">
-          <CheckoutPage />
-        </ProtectedViewWrapper>
+        <CheckoutPage />
       )}
 
       {activeTab === 'legal' && (

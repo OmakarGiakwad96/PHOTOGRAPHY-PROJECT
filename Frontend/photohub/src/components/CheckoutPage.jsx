@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { IndianRupee, Lock, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
+import { initiateRazorpayPayment } from '../utils/razorpay';
 
 export const CheckoutPage = () => {
   const { activeTabParams, photographers, createBooking, navigateToTab, currentUser } = useApp();
@@ -43,33 +44,36 @@ export const CheckoutPage = () => {
 
   const handleInitiatePayment = async () => {
     setIsProcessing(true);
-    // Simulate payment gateway checking details and sending OTP
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsProcessing(false);
-    setIsOtpStage(true);
-  };
+    const newBookingId = Date.now();
 
-  const handleVerifyOtp = async () => {
-    if (otp.length !== 6) {
-      alert(t('checkout.invalidOtp') || 'Please enter a valid 6-digit OTP.');
-      return;
-    }
+    await initiateRazorpayPayment({
+      amount: total,
+      bookingId: newBookingId,
+      userId: currentUser?.user_id || 1,
+      photographerId: photographer.photographer_id,
+      customerName: currentUser?.name || 'Valued Client',
+      customerEmail: currentUser?.email || 'client@photohubconnect.store',
+      customerPhone: currentUser?.phone || '9876543210',
+      packageName: 'Event Photography Session',
+      onSuccess: async (paymentResult) => {
+        await createBooking({
+          booking_id: newBookingId,
+          photographer_id: photographer.photographer_id,
+          package_id: 1,
+          booking_date: new Date().toISOString().split('T')[0],
+          booking_time: '10:00 AM',
+          location: 'Pune / Mumbai Venue Default',
+          total_price: total
+        }, 'Razorpay Secure');
 
-    setIsProcessing(true);
-    // Simulate payment gateway processing OTP and capturing payment
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    await createBooking({
-      photographer_id: photographer.photographer_id,
-      package_id: 1, // dummy
-      booking_date: new Date().toISOString().split('T')[0],
-      booking_time: '10:00 AM',
-      location: 'Checkout Session Default',
-      total_price: total
-    }, paymentMethod === 'upi' ? 'UPI' : (paymentMethod === 'debit_card' ? 'Debit Card' : 'Credit Card'));
-
-    setIsProcessing(false);
-    setSuccess(true);
+        setIsProcessing(false);
+        setSuccess(true);
+      },
+      onFailure: (err) => {
+        setIsProcessing(false);
+        alert(typeof err === 'string' ? err : 'Payment was not completed.');
+      }
+    });
   };
 
   if (success) {
@@ -79,7 +83,9 @@ export const CheckoutPage = () => {
           <CheckCircle className="w-20 h-20 text-emerald-400 mx-auto" />
           <h1 className="text-3xl font-serif font-bold text-white">{t('checkout.successTitle')}</h1>
           <p className="text-slate-400">{t('checkout.successDesc')}</p>
-          <button onClick={() => navigateToTab('dashboard')} className="btn-amber w-full py-4">{t('checkout.goDashboard')}</button>
+          <button onClick={() => navigateToTab('photographers')} className="btn-amber w-full py-4 font-bold">
+            Browse More Photographers
+          </button>
         </div>
       </div>
     );
@@ -89,99 +95,62 @@ export const CheckoutPage = () => {
     <div className="min-h-screen bg-[#0b0e14] py-24 px-4">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
         
-        {/* Left Column: Payment Form */}
+        {/* Left Column: Payment Options */}
         <div className="space-y-8 animate-slide-right">
           <div className="space-y-2">
             <h1 className="text-3xl font-serif font-bold text-white">{t('checkout.secureCheckout')}</h1>
-            <p className="text-slate-400 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-emerald-400" /> {t('checkout.poweredBy')}
+            <p className="text-slate-400 flex items-center gap-2 text-sm">
+              <Lock className="w-4 h-4 text-emerald-400" /> Powered by Razorpay Standard Checkout
             </p>
           </div>
 
-          <div className="glass-card p-8 space-y-6">
-            {!isOtpStage ? (
-              <>
-                <h3 className="text-xl font-bold text-white border-b border-slate-800 pb-4">{t('checkout.paymentMethod')}</h3>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    <label className={`flex flex-col items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer transition text-center ${paymentMethod === 'upi' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-700 bg-slate-900 hover:border-slate-500'}`}>
-                      <input type="radio" name="paymentMethod" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} className="hidden" />
-                      <span className="text-white font-semibold text-sm">UPI</span>
-                    </label>
-                    <label className={`flex flex-col items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer transition text-center ${paymentMethod === 'credit_card' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-700 bg-slate-900 hover:border-slate-500'}`}>
-                      <input type="radio" name="paymentMethod" value="credit_card" checked={paymentMethod === 'credit_card'} onChange={() => setPaymentMethod('credit_card')} className="hidden" />
-                      <CreditCard className="w-5 h-5 text-amber-400" />
-                      <span className="text-white font-semibold text-sm">Credit Card</span>
-                    </label>
-                    <label className={`flex flex-col items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer transition text-center ${paymentMethod === 'debit_card' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-700 bg-slate-900 hover:border-slate-500'}`}>
-                      <input type="radio" name="paymentMethod" value="debit_card" checked={paymentMethod === 'debit_card'} onChange={() => setPaymentMethod('debit_card')} className="hidden" />
-                      <CreditCard className="w-5 h-5 text-amber-400" />
-                      <span className="text-white font-semibold text-sm">Debit Card</span>
-                    </label>
+          <div className="glass-card p-8 space-y-6 border border-slate-800">
+            <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-4">
+              Select Payment Method
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-black text-xs">
+                    UPI
                   </div>
-
-                  {paymentMethod === 'upi' && (
-                    <div className="space-y-4 animate-fade-in pt-4 border-t border-slate-800">
-                      <input type="text" placeholder="Enter UPI ID (e.g., name@upi)" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
-                    </div>
-                  )}
-
-                  {(paymentMethod === 'credit_card' || paymentMethod === 'debit_card') && (
-                    <div className="space-y-4 pt-4 border-t border-slate-800 animate-fade-in">
-                      <input type="text" maxLength="50" placeholder="Enter Account Holder Name" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
-                      <input type="text" inputMode="numeric" maxLength="11" placeholder="Enter 11-digit Account Number" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="text" inputMode="numeric" maxLength="5" placeholder="Enter Expiry Date (MM/YY)" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
-                        <input type="text" inputMode="numeric" maxLength="3" placeholder="Enter 3-digit CVV" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <button 
-                  onClick={handleInitiatePayment}
-                  disabled={isProcessing}
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2 ${
-                    isProcessing ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 hover:scale-[1.02]'
-                  }`}
-                >
-                  {isProcessing ? t('checkout.processing') : `${t('checkout.pay')} ₹${total.toLocaleString()}`}
-                </button>
-              </>
-            ) : (
-              <div className="animate-fade-in">
-                <h3 className="text-xl font-bold text-white border-b border-slate-800 pb-4">OTP Verification</h3>
-                <div className="space-y-4 py-6 text-center">
-                  <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Lock className="w-8 h-8 text-amber-500" />
+                  <div>
+                    <h5 className="text-sm font-bold text-white">Instant UPI & QR Code</h5>
+                    <p className="text-xs text-slate-400">Google Pay, PhonePe, Paytm, BHIM</p>
                   </div>
-                  <p className="text-slate-300">
-                    We have sent a 6-digit OTP to your registered mobile number: 
-                    <span className="font-bold text-white ml-2">{currentUser?.phone ? `******${currentUser.phone.slice(-4)}` : '******9994'}</span>
-                  </p>
-                  <input 
-                    type="text" 
-                    inputMode="numeric" 
-                    maxLength="6" 
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit OTP" 
-                    className="w-full text-center tracking-widest text-2xl font-bold bg-slate-900 border border-slate-700 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-amber-500" 
-                  />
-                  <p className="text-sm text-slate-500 mt-2">Didn't receive the code? <button className="text-amber-500 hover:underline">Resend OTP</button></p>
                 </div>
-                <button 
-                  onClick={handleVerifyOtp}
-                  disabled={isProcessing || otp.length !== 6}
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2 ${
-                    isProcessing || otp.length !== 6 ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]'
-                  }`}
-                >
-                  {isProcessing ? 'Verifying...' : 'Verify & Pay'}
-                </button>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">Fastest</span>
               </div>
-            )}
+
+              <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CreditCard className="w-8 h-8 text-slate-400" />
+                  <div>
+                    <h5 className="text-sm font-bold text-white">Cards & NetBanking</h5>
+                    <p className="text-xs text-slate-400">Visa, Mastercard, RuPay, HDFC, ICICI, SBI</p>
+                  </div>
+                </div>
+                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">Bank 3D-Secure</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 leading-relaxed flex items-start gap-2.5">
+              <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <span>
+                You will be redirected to the official 256-bit encrypted Razorpay checkout modal. Your card and UPI credentials remain strictly protected.
+              </span>
+            </div>
+
+            <button 
+              onClick={handleInitiatePayment}
+              disabled={isProcessing}
+              className={`w-full py-4 rounded-xl font-bold text-base transition flex items-center justify-center gap-2 ${
+                isProcessing ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'btn-amber hover-shine shadow-xl shadow-amber-500/20'
+              }`}
+            >
+              {isProcessing ? 'Opening Razorpay Gateway...' : `Proceed to Pay ₹${total.toLocaleString()}`}
+            </button>
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 
 export const PhotographerProfilePage = () => {
-  const { activeTabParams, photographers, packages, portfolio, reviews, navigateToTab } = useApp();
+  const { activeTabParams, photographers, packages, portfolio, reviews, navigateToTab, setActiveBookingModal } = useApp();
   const { t } = useTranslation();
   
   const id = activeTabParams?.id;
@@ -86,7 +86,7 @@ export const PhotographerProfilePage = () => {
             </div>
             
             <button 
-              onClick={() => navigateToTab('checkout', null, { photographerId: photographer.photographer_id })}
+              onClick={() => setActiveBookingModal({ open: true, photographer_id: photographer.photographer_id, step: 1 })}
               className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold rounded-xl shadow-lg shadow-amber-500/20 transition hover:scale-[1.02] flex items-center justify-center gap-2"
             >
               <CalendarCheck className="w-5 h-5" />

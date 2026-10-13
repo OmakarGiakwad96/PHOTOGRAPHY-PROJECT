@@ -1,0 +1,9 @@
+# PhotoHub Connect Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /client/
+Disallow: /photographer/
+Disallow: /api/
+
+Sitemap: https://www.photohubconnect.store/sitemap.xml
