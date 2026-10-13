@@ -63,12 +63,12 @@ export const initiateRazorpayPayment = async ({
         orderId: `order_sim_${Date.now()}`,
         amount: parseFloat(amount),
         currency: 'INR',
-        keyId: 'rzp_test_mockKey123456'
+        keyId: 'rzp_test_TnRmVOZKCYSkWH'
       };
     }
 
     const { orderId, keyId } = orderData;
-    const finalKeyId = keyId && !keyId.includes('mockKey') ? keyId : (import.meta.env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockKey123456');
+    const finalKeyId = keyId && !keyId.includes('mockKey') ? keyId : (import.meta.env?.VITE_RAZORPAY_KEY_ID || 'rzp_test_TnRmVOZKCYSkWH');
 
     // If Razorpay SDK is available and we have a valid key format, open Razorpay Standard Checkout
     if (isScriptLoaded && window.Razorpay && !finalKeyId.includes('mockKey')) {
