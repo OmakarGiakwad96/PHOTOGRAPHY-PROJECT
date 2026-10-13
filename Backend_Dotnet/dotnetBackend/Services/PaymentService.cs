@@ -78,12 +78,20 @@ namespace PhotoHub.Api.Services
                 {
                     try
                     {
+                        var custName = !string.IsNullOrWhiteSpace(dto.CustomerName) ? dto.CustomerName : $"User #{payment.UserId}";
+                        var custEmail = !string.IsNullOrWhiteSpace(dto.CustomerEmail) ? dto.CustomerEmail : $"user{payment.UserId}@example.com";
+                        var custPhone = dto.CustomerPhone;
+                        var photogName = !string.IsNullOrWhiteSpace(dto.PhotographerName) ? dto.PhotographerName : "Selected Photographer";
+
                         await _notificationService.SendPaymentSuccessNotificationAsync(new PaymentSuccessNotificationRequestDto
                         {
                             PaymentId = payment.PaymentId,
                             BookingId = payment.BookingId,
-                            CustomerName = $"User #{payment.UserId}",
-                            CustomerEmail = $"user{payment.UserId}@example.com",
+                            CustomerName = custName,
+                            CustomerEmail = custEmail,
+                            CustomerPhone = custPhone,
+                            PhotographerName = photogName,
+                            EventDate = dto.EventDate,
                             Amount = payment.Amount,
                             Currency = payment.Currency,
                             TransactionId = payment.TransactionId,
@@ -101,11 +109,15 @@ namespace PhotoHub.Api.Services
             {
                 try
                 {
+                    var custName = !string.IsNullOrWhiteSpace(dto.CustomerName) ? dto.CustomerName : $"User #{payment.UserId}";
+                    var custEmail = !string.IsNullOrWhiteSpace(dto.CustomerEmail) ? dto.CustomerEmail : $"user{payment.UserId}@example.com";
+
                     await _notificationService.SendPaymentFailureNotificationAsync(new PaymentFailureNotificationRequestDto
                     {
                         BookingId = payment.BookingId,
-                        CustomerName = $"User #{payment.UserId}",
-                        CustomerEmail = $"user{payment.UserId}@example.com",
+                        CustomerName = custName,
+                        CustomerEmail = custEmail,
+                        CustomerPhone = dto.CustomerPhone,
                         Amount = payment.Amount,
                         Currency = payment.Currency,
                         FailureReason = "Payment signature verification failed",

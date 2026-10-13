@@ -1,216 +1,289 @@
 using System;
+using System.Collections.Generic;
 using PhotoHub.Api.DTOs;
 
 namespace PhotoHub.Api.Services
 {
     public static class NotificationTemplateHelper
     {
-        public static (string Subject, string HtmlBody, string SmsText) GenerateBookingConfirmation(BookingConfirmationRequestDto dto)
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GenerateBookingConfirmation(BookingConfirmationRequestDto dto)
         {
-            var subject = $"📸 Booking Confirmed! [Booking #{dto.BookingId}]";
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var bookingUrl = !string.IsNullOrWhiteSpace(dto.BookingUrl) 
+                ? dto.BookingUrl 
+                : "https://www.photohubconnect.store/client/bookings";
+            var eventDateStr = dto.EventDate.ToString("dd MMM yyyy");
+            var amountStr = dto.Amount.ToString("N0");
 
+            // WhatsApp Business Cloud API parameters matching approved template:
+            // "Hello {{1}}, your PhotoHub Connect booking {{2}} is confirmed. Photographer: {{3}}. Event date: {{4}}. Amount paid: ₹{{5}}. View your booking: {{6}}."
+            var waTemplate = "booking_confirmed";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                bookingRef,
+                dto.PhotographerName,
+                eventDateStr,
+                amountStr,
+                bookingUrl
+            };
+
+            // SMS content matching approved Indian DLT template:
+            // "PhotoHub Connect: Booking {{booking_reference}} payment verified. Event date: {{event_date}}. View details: {{short_booking_url}}."
+            var smsText = $"PhotoHub Connect: Booking {bookingRef} payment verified. Event date: {eventDateStr}. View details: {bookingUrl}";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "booking_reference", bookingRef },
+                { "photographer_name", dto.PhotographerName },
+                { "event_date", eventDateStr },
+                { "amount_paid", amountStr },
+                { "short_booking_url", bookingUrl }
+            };
+
+            var subject = $"📸 Booking Confirmed! [{bookingRef}]";
             var htmlBody = $@"
 <!DOCTYPE html>
 <html>
-<head>
-    <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }}
-        .header {{ background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; font-size: 24px; font-weight: 700; }}
-        .header p {{ margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; }}
-        .content {{ padding: 30px 25px; color: #334155; line-height: 1.6; }}
-        .details-card {{ background: #f8fafc; border-left: 4px solid #4f46e5; padding: 15px 20px; border-radius: 0 6px 6px 0; margin: 20px 0; }}
-        .details-card table {{ width: 100%; border-collapse: collapse; }}
-        .details-card td {{ padding: 8px 0; font-size: 14px; }}
-        .details-card td.label {{ color: #64748b; font-weight: 600; width: 40%; }}
-        .details-card td.value {{ color: #0f172a; font-weight: 500; }}
-        .footer {{ background: #f1f5f9; padding: 15px 20px; text-align: center; font-size: 12px; color: #64748b; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Booking Confirmed!</h1>
-            <p>Your photoshoot with PhotoHub is locked in</p>
-        </div>
-        <div class='content'>
-            <p>Hi <strong>{dto.CustomerName}</strong>,</p>
-            <p>Great news! Your booking <strong>#{dto.BookingId}</strong> has been successfully confirmed. Below are your session details:</p>
-            
-            <div class='details-card'>
-                <table>
-                    <tr><td class='label'>Booking ID:</td><td class='value'>#{dto.BookingId}</td></tr>
-                    <tr><td class='label'>Photographer:</td><td class='value'>{dto.PhotographerName}</td></tr>
-                    <tr><td class='label'>Package:</td><td class='value'>{dto.PackageName}</td></tr>
-                    <tr><td class='label'>Date & Time:</td><td class='value'>{dto.EventDate:dd MMMM yyyy, hh:mm tt}</td></tr>
-                    <tr><td class='label'>Location:</td><td class='value'>{dto.Location}</td></tr>
-                    <tr><td class='label'>Amount Paid:</td><td class='value'>₹{dto.Amount:N2}</td></tr>
-                </table>
-            </div>
-
-            <p>Our photographer will contact you prior to the event to coordinate setup and preferences.</p>
-            <p>Thank you for choosing <strong>PhotoHub</strong>!</p>
-        </div>
-        <div class='footer'>
-            <p>© {DateTime.UtcNow.Year} PhotoHub Inc. All rights reserved.</p>
-        </div>
+<body style='font-family: Arial, sans-serif; background-color: #f8fafc; padding: 20px; color: #1e293b;'>
+    <div style='max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);'>
+        <h2 style='color: #4f46e5; margin-top: 0;'>Booking Confirmed!</h2>
+        <p>Hello <strong>{dto.CustomerName}</strong>,</p>
+        <p>Your photoshoot session has been successfully booked with PhotoHub Connect.</p>
+        <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+            <tr><td style='padding: 8px 0; color: #64748b;'>Booking Reference:</td><td style='font-weight: bold;'>{bookingRef}</td></tr>
+            <tr><td style='padding: 8px 0; color: #64748b;'>Photographer:</td><td style='font-weight: bold;'>{dto.PhotographerName}</td></tr>
+            <tr><td style='padding: 8px 0; color: #64748b;'>Date:</td><td style='font-weight: bold;'>{eventDateStr}</td></tr>
+            <tr><td style='padding: 8px 0; color: #64748b;'>Amount Paid:</td><td style='font-weight: bold;'>₹{amountStr}</td></tr>
+        </table>
+        <p><a href='{bookingUrl}' style='display: inline-block; background: #4f46e5; color: #ffffff; padding: 10px 20px; border-radius: 6px; text-decoration: none;'>View Booking</a></p>
     </div>
 </body>
 </html>";
 
-            var smsText = $"Hi {dto.CustomerName}, your PhotoHub booking #{dto.BookingId} with {dto.PhotographerName} on {dto.EventDate:dd MMM yyyy} is CONFIRMED. Total: ₹{dto.Amount:N2}. Thank you!";
-
-            return (subject, htmlBody, smsText);
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
         }
 
-        public static (string Subject, string HtmlBody, string SmsText) GenerateBookingReminder(BookingReminderRequestDto dto)
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GeneratePaymentSuccess(PaymentSuccessNotificationRequestDto dto)
         {
-            var subject = $"⏰ Upcoming Shoot Reminder [Booking #{dto.BookingId}]";
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var bookingUrl = !string.IsNullOrWhiteSpace(dto.BookingUrl)
+                ? dto.BookingUrl
+                : "https://www.photohubconnect.store/client/bookings";
+            var amountStr = dto.Amount.ToString("N0");
+            var txnId = string.IsNullOrWhiteSpace(dto.TransactionId) ? $"TXN_{dto.PaymentId}" : dto.TransactionId;
 
-            var htmlBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }}
-        .header {{ background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; font-size: 24px; font-weight: 700; }}
-        .content {{ padding: 30px 25px; color: #334155; line-height: 1.6; }}
-        .details-card {{ background: #f0f9ff; border-left: 4px solid #0284c7; padding: 15px 20px; border-radius: 0 6px 6px 0; margin: 20px 0; }}
-        .details-card table {{ width: 100%; border-collapse: collapse; }}
-        .details-card td {{ padding: 8px 0; font-size: 14px; }}
-        .details-card td.label {{ color: #0369a1; font-weight: 600; width: 40%; }}
-        .footer {{ background: #f1f5f9; padding: 15px 20px; text-align: center; font-size: 12px; color: #64748b; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Reminder: Upcoming Photoshoot!</h1>
-        </div>
-        <div class='content'>
-            <p>Hi <strong>{dto.CustomerName}</strong>,</p>
-            <p>This is a friendly reminder for your upcoming photography session scheduled for <strong>{dto.EventDate:dd MMMM yyyy}</strong>.</p>
-            
-            <div class='details-card'>
-                <table>
-                    <tr><td class='label'>Booking Ref:</td><td>#{dto.BookingId}</td></tr>
-                    <tr><td class='label'>Photographer:</td><td>{dto.PhotographerName}</td></tr>
-                    <tr><td class='label'>Date & Time:</td><td>{dto.EventDate:dd MMMM yyyy, hh:mm tt}</td></tr>
-                    <tr><td class='label'>Location:</td><td>{dto.Location}</td></tr>
-                </table>
-            </div>
+            var waTemplate = "payment_verified";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                bookingRef,
+                amountStr,
+                txnId,
+                bookingUrl
+            };
 
-            <p>Please ensure you arrive 10-15 minutes early at the venue. Contact support if you need to adjust schedule.</p>
-        </div>
-        <div class='footer'>
-            <p>© {DateTime.UtcNow.Year} PhotoHub Inc.</p>
-        </div>
-    </div>
-</body>
-</html>";
+            var smsText = $"PhotoHub Connect: Payment of ₹{amountStr} verified for booking {bookingRef}. Txn ID: {txnId}. View: {bookingUrl}";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "booking_reference", bookingRef },
+                { "amount", amountStr },
+                { "txn_id", txnId },
+                { "short_booking_url", bookingUrl }
+            };
 
-            var smsText = $"REMINDER: Hi {dto.CustomerName}, your PhotoHub shoot #{dto.BookingId} is scheduled on {dto.EventDate:dd MMM yyyy, hh:mm tt} at {dto.Location}. Photographer: {dto.PhotographerName}.";
+            var subject = $"💳 Payment Received - ₹{amountStr} [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, your payment of ₹{amountStr} for booking {bookingRef} was successfully verified (Txn: {txnId}).</p>";
 
-            return (subject, htmlBody, smsText);
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
         }
 
-        public static (string Subject, string HtmlBody, string SmsText) GeneratePaymentSuccess(PaymentSuccessNotificationRequestDto dto)
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GeneratePaymentFailure(PaymentFailureNotificationRequestDto dto)
         {
-            var subject = $"✅ Payment Successful for Booking #{dto.BookingId}";
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var retryUrl = !string.IsNullOrWhiteSpace(dto.RetryUrl)
+                ? dto.RetryUrl
+                : "https://www.photohubconnect.store/checkout";
+            var amountStr = dto.Amount.ToString("N0");
 
-            var htmlBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }}
-        .header {{ background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; font-size: 24px; font-weight: 700; }}
-        .content {{ padding: 30px 25px; color: #334155; line-height: 1.6; }}
-        .receipt-box {{ background: #ecfdf5; border: 1px dashed #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }}
-        .amount {{ font-size: 28px; font-weight: 800; color: #047857; margin: 10px 0; }}
-        .footer {{ background: #f1f5f9; padding: 15px 20px; text-align: center; font-size: 12px; color: #64748b; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Payment Received!</h1>
-            <p>Thank you for your payment</p>
-        </div>
-        <div class='content'>
-            <p>Hi <strong>{dto.CustomerName}</strong>,</p>
-            <p>We have successfully received your payment for Booking <strong>#{dto.BookingId}</strong>.</p>
-            
-            <div class='receipt-box'>
-                <div>Amount Paid</div>
-                <div class='amount'>₹{dto.Amount:N2} {dto.Currency}</div>
-                <div style='font-size:13px; color:#4b5563;'>Txn ID: {dto.TransactionId} | Payment ID: #{dto.PaymentId}</div>
-                <div style='font-size:13px; color:#4b5563;'>Date: {dto.PaidAt:dd MMM yyyy, hh:mm tt}</div>
-            </div>
+            var waTemplate = "payment_failed";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                bookingRef,
+                amountStr,
+                dto.FailureReason,
+                retryUrl
+            };
 
-            <p>Your payment receipt and invoice have been generated and recorded in your PhotoHub account.</p>
-        </div>
-        <div class='footer'>
-            <p>© {DateTime.UtcNow.Year} PhotoHub Inc.</p>
-        </div>
-    </div>
-</body>
-</html>";
+            var smsText = $"PhotoHub Connect: Payment of ₹{amountStr} for booking {bookingRef} could not be completed. Reason: {dto.FailureReason}. Retry: {retryUrl}";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "booking_reference", bookingRef },
+                { "failure_reason", dto.FailureReason },
+                { "retry_url", retryUrl }
+            };
 
-            var smsText = $"PhotoHub: Payment of ₹{dto.Amount:N2} received successfully for Booking #{dto.BookingId}. Txn ID: {dto.TransactionId}. Thank you!";
+            var subject = $"⚠️ Payment Failed [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, payment for booking {bookingRef} failed. Reason: {dto.FailureReason}. You can retry your payment at {retryUrl}.</p>";
 
-            return (subject, htmlBody, smsText);
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
         }
 
-        public static (string Subject, string HtmlBody, string SmsText) GeneratePaymentFailure(PaymentFailureNotificationRequestDto dto)
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GenerateBookingCancellation(BookingCancellationNotificationDto dto)
         {
-            var subject = $"⚠️ Action Required: Payment Failed for Booking #{dto.BookingId}";
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var eventDateStr = dto.EventDate.ToString("dd MMM yyyy");
+            var refundStr = dto.RefundAmount.ToString("N0");
 
-            var htmlBody = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }}
-        .container {{ max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }}
-        .header {{ background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; padding: 30px 20px; text-align: center; }}
-        .header h1 {{ margin: 0; font-size: 24px; font-weight: 700; }}
-        .content {{ padding: 30px 25px; color: #334155; line-height: 1.6; }}
-        .alert-box {{ background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px 20px; border-radius: 0 6px 6px 0; margin: 20px 0; }}
-        .footer {{ background: #f1f5f9; padding: 15px 20px; text-align: center; font-size: 12px; color: #64748b; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='header'>
-            <h1>Payment Transaction Failed</h1>
-        </div>
-        <div class='content'>
-            <p>Hi <strong>{dto.CustomerName}</strong>,</p>
-            <p>We were unable to process your payment of <strong>₹{dto.Amount:N2}</strong> for Booking <strong>#{dto.BookingId}</strong>.</p>
-            
-            <div class='alert-box'>
-                <strong>Reason:</strong> {dto.FailureReason}<br/>
-                {(string.IsNullOrEmpty(dto.TransactionId) ? "" : $"Transaction Ref: {dto.TransactionId}")}
-            </div>
+            var waTemplate = "booking_cancelled";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                bookingRef,
+                eventDateStr,
+                dto.Reason,
+                refundStr
+            };
 
-            <p>Please try processing your payment again or use an alternative payment method to complete your booking.</p>
-        </div>
-        <div class='footer'>
-            <p>© {DateTime.UtcNow.Year} PhotoHub Inc.</p>
-        </div>
-    </div>
-</body>
-</html>";
+            var smsText = $"PhotoHub Connect: Booking {bookingRef} for {eventDateStr} has been cancelled. Refund of ₹{refundStr} initiated. Thank you.";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "booking_reference", bookingRef },
+                { "event_date", eventDateStr },
+                { "refund_amount", refundStr }
+            };
 
-            var smsText = $"ALERT: Payment of ₹{dto.Amount:N2} for PhotoHub Booking #{dto.BookingId} FAILED. Reason: {dto.FailureReason}. Please retry from your account dashboard.";
+            var subject = $"❌ Booking Cancelled [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, your booking {bookingRef} for {eventDateStr} has been cancelled. Refund of ₹{refundStr} has been scheduled.</p>";
 
-            return (subject, htmlBody, smsText);
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
+        }
+
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GeneratePhotographerStatus(PhotographerStatusNotificationDto dto)
+        {
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var eventDateStr = dto.EventDate.ToString("dd MMM yyyy");
+
+            var waTemplate = "photographer_status_update";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                dto.PhotographerName,
+                dto.Status,
+                bookingRef,
+                eventDateStr
+            };
+
+            var smsText = $"PhotoHub Connect: {dto.PhotographerName} has {dto.Status.ToLower()} your booking {bookingRef} for {eventDateStr}.";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "photographer_name", dto.PhotographerName },
+                { "status", dto.Status },
+                { "booking_reference", bookingRef }
+            };
+
+            var subject = $"📸 Photographer Update: {dto.Status} [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, photographer {dto.PhotographerName} has {dto.Status.ToLower()} your booking {bookingRef}.</p>";
+
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
+        }
+
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GenerateRefundStatus(RefundStatusNotificationDto dto)
+        {
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var amountStr = dto.Amount.ToString("N0");
+            var txn = dto.TransactionId ?? $"REF_{dto.RefundId}";
+
+            var waTemplate = "refund_status_update";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                bookingRef,
+                amountStr,
+                dto.RefundStatus,
+                txn
+            };
+
+            var smsText = $"PhotoHub Connect: Refund of ₹{amountStr} for booking {bookingRef} is {dto.RefundStatus}. Ref: {txn}.";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "booking_reference", bookingRef },
+                { "amount", amountStr },
+                { "refund_status", dto.RefundStatus }
+            };
+
+            var subject = $"💰 Refund {dto.RefundStatus} [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, your refund of ₹{amountStr} for booking {bookingRef} is {dto.RefundStatus}.</p>";
+
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
+        }
+
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GenerateBookingReminder(BookingReminderRequestDto dto)
+        {
+            var bookingRef = $"PH-BK-{dto.BookingId}";
+            var eventDateStr = dto.EventDate.ToString("dd MMM yyyy, hh:mm tt");
+            var bookingUrl = !string.IsNullOrWhiteSpace(dto.BookingUrl) ? dto.BookingUrl : "https://www.photohubconnect.store/client/bookings";
+
+            var waTemplate = "event_reminder";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                dto.PhotographerName,
+                eventDateStr,
+                dto.Location,
+                bookingUrl
+            };
+
+            var smsText = $"PhotoHub Connect: Reminder for your photoshoot with {dto.PhotographerName} on {eventDateStr}. Location: {dto.Location}. View: {bookingUrl}";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "customer_name", dto.CustomerName },
+                { "photographer_name", dto.PhotographerName },
+                { "event_date", eventDateStr },
+                { "location", dto.Location }
+            };
+
+            var subject = $"⏰ Upcoming Photoshoot Reminder [{bookingRef}]";
+            var htmlBody = $"<p>Hi {dto.CustomerName}, reminder: your shoot with {dto.PhotographerName} is scheduled for {eventDateStr} at {dto.Location}.</p>";
+
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
+        }
+
+        public static (string WhatsAppTemplate, List<string> WhatsAppParams, string SmsText, Dictionary<string, string> SmsVars, string Subject, string HtmlBody)
+            GenerateOtp(OtpVerificationNotificationDto dto)
+        {
+            var waTemplate = "otp_verification";
+            var waParams = new List<string>
+            {
+                dto.CustomerName,
+                dto.OtpCode,
+                dto.ExpiryMinutes.ToString()
+            };
+
+            var smsText = $"PhotoHub Connect: Your verification OTP is {dto.OtpCode}. Valid for {dto.ExpiryMinutes} minutes. Do not share this with anyone.";
+            var smsVars = new Dictionary<string, string>
+            {
+                { "otp_code", dto.OtpCode },
+                { "expiry_minutes", dto.ExpiryMinutes.ToString() }
+            };
+
+            var subject = "🔐 PhotoHub Connect - Verification OTP";
+            var htmlBody = $"<p>Your verification code is <strong>{dto.OtpCode}</strong>. Valid for {dto.ExpiryMinutes} minutes.</p>";
+
+            return (waTemplate, waParams, smsText, smsVars, subject, htmlBody);
         }
     }
 }

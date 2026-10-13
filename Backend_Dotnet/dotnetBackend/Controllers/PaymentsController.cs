@@ -14,11 +14,16 @@ namespace PhotoHub.Api.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly IRazorpayService _razorpayService;
+        private readonly INotificationService _notificationService;
 
-        public PaymentsController(IPaymentService paymentService, IRazorpayService razorpayService)
+        public PaymentsController(
+            IPaymentService paymentService, 
+            IRazorpayService razorpayService,
+            INotificationService notificationService)
         {
             _paymentService = paymentService;
             _razorpayService = razorpayService;
+            _notificationService = notificationService;
         }
 
         // Razorpay Order Creation Integration
@@ -62,8 +67,69 @@ namespace PhotoHub.Api.Controllers
                 return BadRequest(new { message = "Invalid webhook signature" });
             }
 
-            // Webhook event processed
-            return Ok(new { status = "success", message = "Razorpay webhook received" });
+            // Process verified webhook events
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(payload);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("event", out var eventEl))
+                {
+                    var eventType = eventEl.GetString();
+                    if (eventType == "payment.captured")
+                    {
+                        var entity = root.GetProperty("payload").GetProperty("payment").GetProperty("entity");
+                        var paymentId = entity.GetProperty("id").GetString() ?? "";
+                        var amountInPaise = entity.GetProperty("amount").GetInt64();
+                        var contact = entity.TryGetProperty("contact", out var cEl) ? cEl.GetString() : null;
+                        var email = entity.TryGetProperty("email", out var eEl) ? eEl.GetString() : null;
+                        long bookingId = 0;
+
+                        if (entity.TryGetProperty("notes", out var notes) && notes.TryGetProperty("booking_id", out var bId))
+                        {
+                            long.TryParse(bId.GetString(), out bookingId);
+                        }
+
+                        // Trigger Payment Success Notification (with built-in idempotency)
+                        await _notificationService.SendPaymentSuccessNotificationAsync(new PaymentSuccessNotificationRequestDto
+                        {
+                            PaymentId = Math.Abs(paymentId.GetHashCode()),
+                            BookingId = bookingId > 0 ? bookingId : DateTime.UtcNow.Ticks % 1000000,
+                            CustomerName = email?.Split('@')[0] ?? "Valued Client",
+                            CustomerEmail = email,
+                            CustomerPhone = contact,
+                            Amount = amountInPaise / 100m,
+                            TransactionId = paymentId,
+                            PaymentMethod = "Razorpay Standard"
+                        });
+                    }
+                    else if (eventType == "payment.failed")
+                    {
+                        var entity = root.GetProperty("payload").GetProperty("payment").GetProperty("entity");
+                        var paymentId = entity.GetProperty("id").GetString() ?? "";
+                        var amountInPaise = entity.GetProperty("amount").GetInt64();
+                        var contact = entity.TryGetProperty("contact", out var cEl) ? cEl.GetString() : null;
+                        var email = entity.TryGetProperty("email", out var eEl) ? eEl.GetString() : null;
+                        var desc = entity.TryGetProperty("error_description", out var ed) ? ed.GetString() : "Payment failed";
+
+                        await _notificationService.SendPaymentFailureNotificationAsync(new PaymentFailureNotificationRequestDto
+                        {
+                            BookingId = DateTime.UtcNow.Ticks % 1000000,
+                            CustomerName = email?.Split('@')[0] ?? "Valued Client",
+                            CustomerEmail = email,
+                            CustomerPhone = contact,
+                            Amount = amountInPaise / 100m,
+                            FailureReason = desc ?? "Payment declined",
+                            TransactionId = paymentId
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Razorpay webhook parsing notice: {ex.Message}");
+            }
+
+            return Ok(new { status = "success", message = "Razorpay webhook verified and processed" });
         }
 
         // Payment History by User ID

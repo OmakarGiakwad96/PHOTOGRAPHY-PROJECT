@@ -145,10 +145,30 @@ export const BookingModal = () => {
           special_requirements: specialReqs,
           total_price: totalAmount,
           customer_name: clientName,
-          customer_phone: clientPhone
+          customer_phone: clientPhone,
+          photographer_name: currentPhotographer.name
         };
 
         const result = await createBooking(bookingPayload, 'Razorpay Secure');
+
+        // Dispatch verified WhatsApp and SMS notifications
+        try {
+          await api.post('/notifications/booking-confirmation', {
+            bookingId: newBookingId,
+            customerName: clientName,
+            customerEmail: clientEmail || currentUser?.email || 'client@photohubconnect.store',
+            customerPhone: clientPhone,
+            photographerName: currentPhotographer.name,
+            eventDate: new Date(bookingDate).toISOString(),
+            location: location,
+            packageName: currentPackage?.name || 'Photography Session',
+            amount: totalAmount,
+            bookingUrl: 'https://www.photohubconnect.store/client/bookings'
+          });
+        } catch (notifErr) {
+          console.warn("Notification dispatch notice:", notifErr);
+        }
+
         setIsProcessing(false);
         setBookingSuccess({
           booking: result?.booking || { ...bookingPayload, booking_status: 'Confirmed' },
@@ -336,15 +356,20 @@ export const BookingModal = () => {
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Mobile (for OTP/Updates)</label>
-                <input
-                  type="tel"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="9876543210"
-                  required
-                  className="w-full px-3 py-2.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-500"
-                />
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Mobile (WhatsApp &amp; SMS) <span className="text-amber-400">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-mono">+91</span>
+                  <input
+                    type="tel"
+                    value={clientPhone.replace(/^\+91\s*/, '')}
+                    onChange={(e) => setClientPhone(`+91 ${e.target.value.replace(/^\+91\s*/, '')}`)}
+                    placeholder="9876543210"
+                    required
+                    className="w-full pl-10 pr-3 py-2.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Email</label>
@@ -357,6 +382,22 @@ export const BookingModal = () => {
                   className="w-full px-3 py-2.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-500"
                 />
               </div>
+            </div>
+
+            {/* Notification Consent Checkbox */}
+            <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <label className="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  defaultChecked 
+                  className="mt-0.5 accent-amber-500 rounded" 
+                  id="notification-consent-cb"
+                />
+                <span className="leading-relaxed">
+                  I agree to receive instant booking confirmations, photographer approvals, and Razorpay receipts on 
+                  <strong className="text-emerald-400 font-semibold"> WhatsApp</strong> and <strong className="text-sky-400 font-semibold">SMS</strong>.
+                </span>
+              </label>
             </div>
 
             {errorMessage && (

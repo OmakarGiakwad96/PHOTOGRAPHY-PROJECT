@@ -386,11 +386,19 @@ export const AppProvider = ({ children }) => {
     const newPayment = {
       payment_id: newPaymentId,
       booking_id: newBookingId,
+      userId: currentUser.user_id,
+      photographerId: bookingData.photographer_id,
       amount: parseFloat(bookingData.total_price),
-      payment_method: paymentMethod || 'Credit Card',
-      payment_gateway: 'PhotoHub Secure Pay',
-      transaction_id: `TXN_${Math.random().toString(36).substring(2, 11).toUpperCase()}`,
+      currency: 'INR',
+      payment_method: paymentMethod || 'Razorpay',
+      payment_gateway: 'Razorpay Secure',
+      transaction_id: bookingData.transaction_id || `TXN_${Math.random().toString(36).substring(2, 11).toUpperCase()}`,
       payment_status: 'Completed',
+      customerName: bookingData.customer_name || currentUser.name,
+      customerEmail: currentUser.email,
+      customerPhone: bookingData.customer_phone || currentUser.phone,
+      photographerName: bookingData.photographer_name,
+      eventDate: bookingData.booking_date,
       paid_at: nowStr,
       created_at: nowStr
     };
@@ -449,6 +457,24 @@ export const AppProvider = ({ children }) => {
       try {
         await api.post('/refunds', newRefund);
       } catch(err) {}
+    }
+
+    // Dispatch WhatsApp & SMS cancellation update
+    try {
+      const bObj = bookings.find(b => b.booking_id === bookingId);
+      const photog = photographers.find(p => p.photographer_id === bObj?.photographer_id);
+      await api.post('/notifications/booking-cancellation', {
+        bookingId: bookingId,
+        customerName: currentUser?.name || 'Valued Client',
+        customerPhone: currentUser?.phone || '',
+        customerEmail: currentUser?.email || '',
+        photographerName: photog?.name || 'Photographer',
+        reason: reason || 'Customer requested cancellation',
+        refundAmount: payment ? payment.amount : 0,
+        eventDate: bObj?.booking_date ? new Date(bObj.booking_date).toISOString() : new Date().toISOString()
+      });
+    } catch(notifErr) {
+      console.warn("Cancellation notification notice:", notifErr);
     }
   };
 

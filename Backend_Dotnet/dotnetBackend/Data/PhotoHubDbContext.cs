@@ -15,6 +15,7 @@ namespace PhotoHub.Api.Data
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<PaymentIssue> PaymentIssues { get; set; }
         public DbSet<NotificationLog> NotificationLogs { get; set; }
+        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
         public DbSet<ContactSubmission> ContactSubmissions { get; set; }
         public DbSet<SupportTicket> SupportTickets { get; set; }
         public DbSet<TicketReply> TicketReplies { get; set; }
@@ -44,6 +45,21 @@ namespace PhotoHub.Api.Data
 
             modelBuilder.Entity<NotificationLog>()
                 .HasIndex(n => n.EventType);
+
+            modelBuilder.Entity<NotificationLog>()
+                .HasIndex(n => n.ProviderMessageId);
+
+            modelBuilder.Entity<NotificationLog>()
+                .HasIndex(n => n.IdempotencyKey);
+
+            modelBuilder.Entity<NotificationLog>()
+                .HasIndex(n => n.Status);
+
+            modelBuilder.Entity<NotificationPreference>()
+                .HasIndex(p => p.PhoneNumber);
+
+            modelBuilder.Entity<NotificationPreference>()
+                .HasIndex(p => p.UserId);
 
             modelBuilder.Entity<SupportTicket>()
                 .HasIndex(t => t.TicketNumber)

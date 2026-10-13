@@ -125,6 +125,7 @@ namespace PhotoHub.Api.Services
                 CreatedAt = DateTime.UtcNow
             };
 
+            ticket.Replies.Add(reply);
             _dbContext.TicketReplies.Add(reply);
 
             // Automatically update ticket state

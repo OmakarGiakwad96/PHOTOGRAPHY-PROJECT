@@ -16,6 +16,13 @@ namespace PhotoHub.Api.DTOs
         public string? RazorpayOrderId { get; set; }
         public string? RazorpayPaymentId { get; set; }
         public string? RazorpaySignature { get; set; }
+
+        // Customer & Shoot details for notifications
+        public string? CustomerName { get; set; }
+        public string? CustomerEmail { get; set; }
+        public string? CustomerPhone { get; set; }
+        public string? PhotographerName { get; set; }
+        public DateTime? EventDate { get; set; }
     }
 
     public class PaymentResponseDto
