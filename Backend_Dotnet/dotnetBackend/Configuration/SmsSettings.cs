@@ -11,6 +11,9 @@ namespace PhotoHub.Api.Configuration
         public string EntityId { get; set; } = string.Empty; // Indian DLT Principal Entity (PE) ID
         public string Route { get; set; } = "4"; // 4 for Transactional SMS
 
+        // 2Factor.in Configuration (Instant Indian SMS & OTP)
+        public string TwoFactorApiKey { get; set; } = string.Empty;
+
         // Twilio fallback (if used)
         public string AccountSid { get; set; } = string.Empty;
         public string AuthToken { get; set; } = string.Empty;

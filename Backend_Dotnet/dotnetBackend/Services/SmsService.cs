@@ -46,16 +46,16 @@ namespace PhotoHub.Api.Services
                 return (false, "Failed", null, "Invalid phone number format. Must be a valid 10-digit mobile number.");
             }
 
-            var isConfigured = !string.IsNullOrWhiteSpace(_smsSettings.AuthKey)
+            var isConfigured = (!string.IsNullOrWhiteSpace(_smsSettings.AuthKey) || !string.IsNullOrWhiteSpace(_smsSettings.TwoFactorApiKey))
                                && !_smsSettings.AuthKey.StartsWith("mock")
                                && !_smsSettings.AuthKey.StartsWith("YOUR_")
                                && !_smsSettings.UseMockProvider;
 
             if (!isConfigured)
             {
-                var mockRequestId = $"msg91_req_{Guid.NewGuid():N}";
+                var mockRequestId = $"sms_req_{Guid.NewGuid():N}";
                 _logger.LogInformation("==================================================");
-                _logger.LogInformation("[INDIAN SMS GATEWAY - MSG91 SIMULATION]");
+                _logger.LogInformation("[INDIAN SMS GATEWAY SIMULATION]");
                 _logger.LogInformation("To: {Phone}", normalizedPhone);
                 _logger.LogInformation("Sender ID: {SenderId}", _smsSettings.SenderId);
                 _logger.LogInformation("Template ID: {TemplateId}", templateId ?? _smsSettings.TemplateId);
@@ -66,9 +66,63 @@ namespace PhotoHub.Api.Services
                 return (true, "Simulated", mockRequestId, null);
             }
 
+            // 1. 2Factor.in Provider (Instant Indian OTP SMS without DLT)
+            var has2Factor = !string.IsNullOrWhiteSpace(_smsSettings.TwoFactorApiKey) 
+                             && !_smsSettings.TwoFactorApiKey.StartsWith("your_")
+                             && !_smsSettings.TwoFactorApiKey.StartsWith("mock");
+
+            if (has2Factor || (_smsSettings.Provider != null && _smsSettings.Provider.Equals("2Factor", StringComparison.OrdinalIgnoreCase)))
+            {
+                try
+                {
+                    string otpCode = "123456";
+                    if (templateVars != null && templateVars.TryGetValue("otp", out var v)) otpCode = v;
+                    else if (templateVars != null && templateVars.TryGetValue("code", out var v2)) otpCode = v2;
+                    else
+                    {
+                        var match = Regex.Match(message, @"\b\d{6}\b");
+                        if (match.Success) otpCode = match.Value;
+                    }
+
+                    var phone10 = normalizedPhone.StartsWith("91") && normalizedPhone.Length == 12 
+                        ? normalizedPhone.Substring(2) 
+                        : normalizedPhone;
+
+                    var url = $"https://2factor.in/API/V1/{_smsSettings.TwoFactorApiKey.Trim()}/SMS/{phone10}/{otpCode}";
+                    var response = await _httpClient.GetAsync(url);
+                    var respString = await response.Content.ReadAsStringAsync();
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        using var doc = JsonDocument.Parse(respString);
+                        var status = doc.RootElement.TryGetProperty("Status", out var s) ? s.GetString() : "Success";
+                        var details = doc.RootElement.TryGetProperty("Details", out var d) ? d.GetString() : null;
+
+                        if (status == "Success")
+                        {
+                            _logger.LogInformation("SMS dispatched via 2Factor.in to {Phone}. SessionId: {Details}", normalizedPhone, details);
+                            return (true, "Accepted", details, null);
+                        }
+                        else
+                        {
+                            return (false, "Failed", null, $"2Factor error: {details}");
+                        }
+                    }
+                    else
+                    {
+                        return (false, "Failed", null, $"2Factor HTTP {response.StatusCode}: {respString}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Exception dispatching SMS via 2Factor to {Phone}", normalizedPhone);
+                    return (false, "Failed", null, ex.Message);
+                }
+            }
+
             try
             {
-                // MSG91 Flow API (Recommended for Indian DLT transactional messaging)
+                // 2. MSG91 Flow API (Recommended for Indian DLT transactional messaging)
                 var url = "https://control.msg91.com/api/v5/flow/";
 
                 var recipientObj = new Dictionary<string, object>
