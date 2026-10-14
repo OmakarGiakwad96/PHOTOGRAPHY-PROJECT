@@ -1075,5 +1075,80 @@ namespace PhotoHub.Api.Services
 
             return null;
         }
+
+        public async Task<InAppNotification> CreateInAppNotificationAsync(
+            long userId, 
+            string role, 
+            string title, 
+            string message, 
+            string type, 
+            string? actionUrl = null, 
+            string? referenceId = null)
+        {
+            var notification = new InAppNotification
+            {
+                UserId = userId,
+                Role = role ?? "Client",
+                Title = title,
+                Message = message,
+                Type = type ?? "System",
+                ActionUrl = actionUrl,
+                ReferenceId = referenceId,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _dbContext.InAppNotifications.Add(notification);
+            await _dbContext.SaveChangesAsync();
+            return notification;
+        }
+
+        public async Task<IEnumerable<InAppNotification>> GetUserInAppNotificationsAsync(long userId, int limit = 30)
+        {
+            return await _dbContext.InAppNotifications
+                .Where(n => n.UserId == userId || n.Role == "All")
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetUnreadInAppNotificationCountAsync(long userId)
+        {
+            return await _dbContext.InAppNotifications
+                .Where(n => (n.UserId == userId || n.Role == "All") && !n.IsRead)
+                .CountAsync();
+        }
+
+        public async Task<bool> MarkInAppNotificationAsReadAsync(long notificationId, long userId)
+        {
+            var notification = await _dbContext.InAppNotifications
+                .FirstOrDefaultAsync(n => n.NotificationId == notificationId && (n.UserId == userId || n.Role == "All"));
+
+            if (notification == null) return false;
+
+            notification.IsRead = true;
+            notification.ReadAt = DateTime.UtcNow;
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> MarkAllInAppNotificationsAsReadAsync(long userId)
+        {
+            var unread = await _dbContext.InAppNotifications
+                .Where(n => (n.UserId == userId || n.Role == "All") && !n.IsRead)
+                .ToListAsync();
+
+            if (!unread.Any()) return true;
+
+            var now = DateTime.UtcNow;
+            foreach (var item in unread)
+            {
+                item.IsRead = true;
+                item.ReadAt = now;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
     }
 }

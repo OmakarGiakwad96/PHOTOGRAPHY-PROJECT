@@ -28,6 +28,7 @@ const javaRoutes = [
     '/api/photographers',
     '/api/portfolio',
     '/api/reviews',
+    '/api/messages',
     '/api/users' // Explicitly added for the frontend usage
 ];
 

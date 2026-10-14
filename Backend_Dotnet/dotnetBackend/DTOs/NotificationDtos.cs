@@ -177,6 +177,10 @@ namespace PhotoHub.Api.DTOs
         public string CustomerName { get; set; } = "User";
 
         public int ExpiryMinutes { get; set; } = 10;
+
+        public string Channel { get; set; } = "SMS";
+
+        public string? Email { get; set; }
     }
 
     public class BookingReminderRequestDto

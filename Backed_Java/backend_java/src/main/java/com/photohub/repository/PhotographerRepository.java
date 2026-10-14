@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface PhotographerRepository extends JpaRepository<Photographer, Long> {
     Optional<Photographer> findByEmail(String email);
+    Optional<Photographer> findByPhone(String phone);
     List<Photographer> findByLocationContainingIgnoreCase(String location);
     List<Photographer> findBySpecialtiesContainingIgnoreCase(String category);
 }

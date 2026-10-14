@@ -223,5 +223,86 @@ namespace PhotoHub.Api.Services
             Assert.Equal("Delivered", updatedLog.Status);
             Assert.NotNull(updatedLog.DeliveredAt);
         }
+
+        [Fact]
+        public async Task InAppNotifications_CreateAndRetrieve_CalculatesUnreadCountCorrectly()
+        {
+            var (notifService, _, _, db) = CreateTestSetup("Test_InAppCount");
+
+            long userId = 777;
+
+            // 1. Create two unread notifications
+            await notifService.CreateInAppNotificationAsync(userId, "Client", "Booking Request Sent", "Your request is under review.", "Booking");
+            await notifService.CreateInAppNotificationAsync(userId, "Client", "Payment Received", "Amount ₹15,000 recorded.", "Payment");
+
+            var count = await notifService.GetUnreadInAppNotificationCountAsync(userId);
+            Assert.Equal(2, count);
+
+            var list = (await notifService.GetUserInAppNotificationsAsync(userId)).ToList();
+            Assert.Equal(2, list.Count);
+            Assert.All(list, n => Assert.False(n.IsRead));
+        }
+
+        [Fact]
+        public async Task InAppNotifications_MarkSingleRead_UpdatesStatusAndDecrementsCount()
+        {
+            var (notifService, _, _, db) = CreateTestSetup("Test_InAppMarkSingle");
+
+            long userId = 888;
+            var item1 = await notifService.CreateInAppNotificationAsync(userId, "Client", "Alert 1", "Msg 1", "System");
+            var item2 = await notifService.CreateInAppNotificationAsync(userId, "Client", "Alert 2", "Msg 2", "System");
+
+            var marked = await notifService.MarkInAppNotificationAsReadAsync(item1.NotificationId, userId);
+            Assert.True(marked);
+
+            var unreadCount = await notifService.GetUnreadInAppNotificationCountAsync(userId);
+            Assert.Equal(1, unreadCount);
+
+            var updated1 = await db.InAppNotifications.FindAsync(item1.NotificationId);
+            Assert.True(updated1?.IsRead);
+            Assert.NotNull(updated1?.ReadAt);
+        }
+
+        [Fact]
+        public async Task InAppNotifications_MarkAllRead_ClearsAllUnreadForUser()
+        {
+            var (notifService, _, _, db) = CreateTestSetup("Test_InAppMarkAll");
+
+            long userId = 999;
+            await notifService.CreateInAppNotificationAsync(userId, "Client", "Item A", "Msg A", "System");
+            await notifService.CreateInAppNotificationAsync(userId, "Client", "Item B", "Msg B", "System");
+            await notifService.CreateInAppNotificationAsync(userId, "Client", "Item C", "Msg C", "System");
+
+            var countBefore = await notifService.GetUnreadInAppNotificationCountAsync(userId);
+            Assert.Equal(3, countBefore);
+
+            var success = await notifService.MarkAllInAppNotificationsAsReadAsync(userId);
+            Assert.True(success);
+
+            var countAfter = await notifService.GetUnreadInAppNotificationCountAsync(userId);
+            Assert.Equal(0, countAfter);
+        }
+
+        [Fact]
+        public async Task SendOtpVerificationAsync_WithValidPhone_DispatchesSuccessfully()
+        {
+            var (notifService, _, _, db) = CreateTestSetup("Test_SendOtp");
+
+            var dto = new OtpVerificationNotificationDto
+            {
+                PhoneNumber = "+91 98765 43210",
+                OtpCode = "458921",
+                ExpiryMinutes = 10,
+                Channel = "SMS"
+            };
+
+            var result = await notifService.SendOtpVerificationAsync(dto);
+            Assert.True(result.Success);
+            Assert.True(result.SmsSent);
+
+            var smsLog = await db.NotificationLogs.FirstOrDefaultAsync(l => l.Recipient.Contains("98765") && l.NotificationType == "SMS");
+            Assert.NotNull(smsLog);
+            Assert.Equal("OtpVerification", smsLog.EventType);
+        }
     }
 }

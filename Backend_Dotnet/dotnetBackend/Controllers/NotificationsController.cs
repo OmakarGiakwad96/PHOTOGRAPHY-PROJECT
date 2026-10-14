@@ -359,5 +359,71 @@ namespace PhotoHub.Api.Controllers
             var stats = await _notificationService.GetNotificationStatsAsync();
             return Ok(stats);
         }
+
+        // ==========================================
+        // In-App Notification Center
+        // ==========================================
+
+        /// <summary>
+        /// Retrieves in-app notifications and unread count for an authenticated user.
+        /// </summary>
+        [HttpGet("in-app/{userId}")]
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetInAppNotifications(long userId, [FromQuery] int limit = 30)
+        {
+            var notifications = await _notificationService.GetUserInAppNotificationsAsync(userId, limit);
+            var unreadCount = await _notificationService.GetUnreadInAppNotificationCountAsync(userId);
+            return Ok(new
+            {
+                userId,
+                unreadCount,
+                notifications
+            });
+        }
+
+        /// <summary>
+        /// Marks a single in-app notification as read.
+        /// </summary>
+        [HttpPost("in-app/{id}/read")]
+        [HttpPut("in-app/{id}/read")]
+        public async Task<IActionResult> MarkInAppNotificationRead(long id, [FromQuery] long userId = 0)
+        {
+            var success = await _notificationService.MarkInAppNotificationAsReadAsync(id, userId);
+            return Ok(new { success, message = success ? "Notification marked as read." : "Notification not found or unauthorized." });
+        }
+
+        /// <summary>
+        /// Marks all in-app notifications for a user as read.
+        /// </summary>
+        [HttpPost("in-app/read-all/{userId}")]
+        [HttpPut("in-app/read-all/{userId}")]
+        public async Task<IActionResult> MarkAllInAppNotificationsRead(long userId)
+        {
+            var success = await _notificationService.MarkAllInAppNotificationsAsReadAsync(userId);
+            return Ok(new { success, message = "All notifications marked as read." });
+        }
+
+        /// <summary>
+        /// Creates a persistent in-app notification.
+        /// </summary>
+        [HttpPost("in-app/create")]
+        public async Task<IActionResult> CreateInAppNotification([FromBody] InAppNotification notificationDto)
+        {
+            if (notificationDto.UserId <= 0 || string.IsNullOrWhiteSpace(notificationDto.Title))
+            {
+                return BadRequest(new { message = "UserId and Title are required." });
+            }
+
+            var created = await _notificationService.CreateInAppNotificationAsync(
+                notificationDto.UserId,
+                notificationDto.Role,
+                notificationDto.Title,
+                notificationDto.Message,
+                notificationDto.Type,
+                notificationDto.ActionUrl,
+                notificationDto.ReferenceId);
+
+            return Ok(created);
+        }
     }
 }

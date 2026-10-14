@@ -7,6 +7,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { NotificationBell } from './NotificationBell';
 
 const MenuLink = ({ icon, label, badge, onClick }) => (
   <button
@@ -249,10 +250,12 @@ export const Navbar = () => {
               </div>
             )}
 
-            {/* User Profile */}
+            {/* In-App Notifications & User Profile */}
+            {isAuthenticated && currentUser && (
+              <NotificationBell />
+            )}
 
             {isAuthenticated && currentUser ? (
-
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}

@@ -46,5 +46,15 @@ namespace PhotoHub.Api.Services
         Task<NotificationPreference?> GetNotificationPreferencesAsync(long userId);
 
         Task<NotificationPreference> SaveNotificationPreferencesAsync(NotificationPreferenceDto dto);
+
+        Task<InAppNotification> CreateInAppNotificationAsync(long userId, string role, string title, string message, string type, string? actionUrl = null, string? referenceId = null);
+
+        Task<IEnumerable<InAppNotification>> GetUserInAppNotificationsAsync(long userId, int limit = 30);
+
+        Task<int> GetUnreadInAppNotificationCountAsync(long userId);
+
+        Task<bool> MarkInAppNotificationAsReadAsync(long notificationId, long userId);
+
+        Task<bool> MarkAllInAppNotificationsAsReadAsync(long userId);
     }
 }

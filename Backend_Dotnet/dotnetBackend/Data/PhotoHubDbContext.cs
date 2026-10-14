@@ -21,6 +21,7 @@ namespace PhotoHub.Api.Data
         public DbSet<TicketReply> TicketReplies { get; set; }
         public DbSet<CustomerFeedback> CustomerFeedbacks { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<InAppNotification> InAppNotifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +69,12 @@ namespace PhotoHub.Api.Data
             modelBuilder.Entity<Complaint>()
                 .HasIndex(c => c.ComplaintNumber)
                 .IsUnique();
+
+            modelBuilder.Entity<InAppNotification>()
+                .HasIndex(n => n.UserId);
+
+            modelBuilder.Entity<InAppNotification>()
+                .HasIndex(n => new { n.UserId, n.IsRead });
         }
     }
 }

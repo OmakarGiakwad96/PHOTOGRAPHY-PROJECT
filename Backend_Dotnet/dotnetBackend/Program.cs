@@ -15,9 +15,9 @@ builder.Services.Configure<WhatsAppSettings>(builder.Configuration.GetSection("W
 builder.Services.AddHttpClient<IRazorpayService, RazorpayService>();
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 builder.Services.AddHttpClient<ISmsService, SmsService>();
+builder.Services.AddHttpClient<IEmailService, EmailService>();
 
 // Register Infrastructure & Domain Services
-builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ISmsService, SmsService>();
 builder.Services.AddScoped<IWhatsAppService, WhatsAppService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();

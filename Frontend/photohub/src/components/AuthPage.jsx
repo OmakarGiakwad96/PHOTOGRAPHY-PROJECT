@@ -3,6 +3,7 @@ import { Camera, LogIn, UserPlus, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lu
 import { useApp } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const AuthPage = () => {
   const { loginUser, registerUser, switchUserRole, navigateToTab, activeTabParams, isAuthenticated } = useApp();
@@ -35,6 +36,13 @@ export const AuthPage = () => {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
+
+  React.useEffect(() => {
+    if (window.location.hash.includes('reset-password')) {
+      setShowForgotModal(true);
+    }
+  }, []);
 
   const handleRoleChange = (newRole) => {
     setRole(newRole);
@@ -230,6 +238,18 @@ export const AuthPage = () => {
                   {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+
+              {mode === 'login' && (
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotModal(true)}
+                    className="text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
             </div>
 
             {error && (
@@ -291,6 +311,16 @@ export const AuthPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Journey Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotModal}
+        onClose={() => setShowForgotModal(false)}
+        onResetSuccess={() => {
+          setShowForgotModal(false);
+          setMode('login');
+        }}
+      />
     </div>
   );
 };

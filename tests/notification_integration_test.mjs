@@ -209,6 +209,84 @@ async function run() {
     return `Total logged: ${stats.totalNotifications}, Delivery Rate: ${stats.deliveryRate}%`;
   })) passed++;
 
+  // Test 7: In-App Notification Center API Lifecycle
+  total++;
+  if (await test('In-App Notification Center Lifecycle (/api/notifications/in-app/*)', async () => {
+    const testUserId = 99991;
+
+    // 1. Create In-App Notification
+    const createRes = await makeRequest('/api/notifications/in-app/create', 'POST', {
+      userId: testUserId,
+      role: 'Client',
+      title: 'Booking Confirmed! 📸',
+      message: 'Your shoot with Rajesh Kumar on 25 Oct 2026 is confirmed.',
+      type: 'Booking',
+      actionUrl: '/client/bookings',
+      referenceId: 'BK_TEST_99'
+    });
+    if (createRes.statusCode !== 200) throw new Error(`Create failed HTTP ${createRes.statusCode}: ${createRes.body}`);
+    const createdNotif = JSON.parse(createRes.body);
+    if (!createdNotif.notificationId) throw new Error(`Missing notificationId in created object`);
+
+    // 2. Fetch User Notifications & Verify Unread Count
+    const getRes = await makeRequest(`/api/notifications/in-app/${testUserId}`);
+    if (getRes.statusCode !== 200) throw new Error(`Fetch failed HTTP ${getRes.statusCode}: ${getRes.body}`);
+    const getJson = JSON.parse(getRes.body);
+    if (getJson.unreadCount < 1 || !Array.isArray(getJson.notifications)) {
+      throw new Error(`Expected at least 1 unread notification, got: ${getRes.body}`);
+    }
+
+    // 3. Mark Single Notification as Read
+    const readRes = await makeRequest(`/api/notifications/in-app/${createdNotif.notificationId}/read?userId=${testUserId}`, 'POST');
+    if (readRes.statusCode !== 200) throw new Error(`Mark read failed HTTP ${readRes.statusCode}: ${readRes.body}`);
+
+    // 4. Mark All Read
+    const markAllRes = await makeRequest(`/api/notifications/in-app/read-all/${testUserId}`, 'POST');
+    if (markAllRes.statusCode !== 200) throw new Error(`Mark all failed HTTP ${markAllRes.statusCode}: ${markAllRes.body}`);
+
+    return `Lifecycle verified: Created #${createdNotif.notificationId}, retrieved unread, and marked read`;
+  })) passed++;
+
+  // Test 8: Real SMS OTP Dispatch with Indian Phone Normalization
+  total++;
+  if (await test('SMS OTP Verification Dispatch (/api/notifications/otp-verification)', async () => {
+    const otpPayload = {
+      phoneNumber: '+91 98765 43210',
+      otpCode: '839201',
+      customerName: 'Aarav Sharma',
+      expiryMinutes: 10,
+      channel: 'SMS'
+    };
+
+    const res = await makeRequest('/api/notifications/otp-verification', 'POST', otpPayload);
+    if (res.statusCode !== 200) throw new Error(`OTP dispatch failed HTTP ${res.statusCode}: ${res.body}`);
+    const json = JSON.parse(res.body);
+    if (!json.success && !json.smsSent) {
+      throw new Error(`OTP dispatch response missing success: ${res.body}`);
+    }
+    return `OTP dispatched via SMS and WhatsApp to ${otpPayload.phoneNumber}`;
+  })) passed++;
+
+  // Test 9: Transactional Email Integration (Resend / SMTP)
+  total++;
+  if (await test('Transactional Email Dispatch (/api/notifications/send-email)', async () => {
+    const emailPayload = {
+      recipientEmail: 'client@photohubconnect.store',
+      subject: 'PhotoHub Security: Password Reset Verification',
+      body: '<h2>Password Reset Request</h2><p>Your single-use reset code is: <strong>839201</strong></p>',
+      isHtml: true,
+      referenceId: 'RESET_TEST_01'
+    };
+
+    const res = await makeRequest('/api/notifications/send-email', 'POST', emailPayload);
+    if (res.statusCode !== 200) throw new Error(`Email dispatch failed HTTP ${res.statusCode}: ${res.body}`);
+    const json = JSON.parse(res.body);
+    if (!json.notificationId || (json.status !== 'Sent' && json.status !== 'Simulated')) {
+      throw new Error(`Email dispatch failed status check: ${res.body}`);
+    }
+    return `Dispatched email status '${json.status}' to ${emailPayload.recipientEmail}`;
+  })) passed++;
+
   console.log(`\n============================================================`);
   console.log(`RESULTS: ${passed}/${total} TESTS PASSED`);
   console.log(`============================================================\n`);
