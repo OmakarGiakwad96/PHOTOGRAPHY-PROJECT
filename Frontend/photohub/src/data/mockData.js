@@ -15,6 +15,19 @@ export const INITIAL_USERS = [
     created_at: "2025-01-10 09:15:00"
   },
   {
+    user_id: 10,
+    name: "Omkar Gaikwad",
+    email: "omkargaikwad336@gmail.com",
+    password: "Password@123",
+    phone: "8080938257",
+    role: "client",
+    profile_picture: "/images/faces/faces-3.webp",
+    status: "active",
+    is_deleted: false,
+    deleted_at: null,
+    created_at: "2025-01-15 10:00:00"
+  },
+  {
     user_id: 99,
     name: "System Admin",
     email: "admin@gmail.com",
