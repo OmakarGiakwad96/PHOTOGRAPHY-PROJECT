@@ -42,6 +42,9 @@ public class OtpService {
     @Value("${app.dotnet.target:http://localhost:5000}")
     private String dotnetTarget;
 
+    @Value("${TWOFACTOR_API_KEY:${app.twofactor.key:}}")
+    private String twoFactorApiKey;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
@@ -288,6 +291,19 @@ public class OtpService {
     private void dispatchDelivery(String identifier, String channel, String purpose, String rawOtp, String rawToken) {
         try {
             if ("SMS".equalsIgnoreCase(channel)) {
+                // If 2Factor API key is configured, dispatch directly via 2Factor.in official API
+                if (twoFactorApiKey != null && !twoFactorApiKey.trim().isEmpty() && !twoFactorApiKey.startsWith("your_")) {
+                    try {
+                        String phone10 = identifier.startsWith("91") && identifier.length() == 12 ? identifier.substring(2) : identifier;
+                        String url = "https://2factor.in/API/V1/" + twoFactorApiKey.trim() + "/SMS/" + phone10 + "/" + rawOtp;
+                        restTemplate.getForObject(url, String.class);
+                        logger.info("Dispatched real SMS OTP via 2Factor.in to [{}]", maskIdentifier(identifier));
+                        return;
+                    } catch (Exception e) {
+                        logger.warn("Direct 2Factor call notice: {}, delegating to notification microservice", e.getMessage());
+                    }
+                }
+
                 // Call .NET /api/notifications/otp-verification
                 Map<String, Object> req = new HashMap<>();
                 req.put("phoneNumber", identifier);
